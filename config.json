@@ -1,0 +1,92 @@
+{
+  "autonomous_programming_config": {
+    "safety": {
+      "automation_confidence_threshold": 0.5,
+      "max_commands_per_session": 10,
+      "command_timeout_seconds": 30,
+      "enable_audit_logging": true,
+      "require_project_path": false,
+      "sandbox_mode": true
+    },
+    "approved_commands": {
+      "file_operations": [
+        "ls", "pwd", "find", "grep", "cat", "head", "tail", "wc", "file", "stat"
+      ],
+      "git_operations": [
+        "git status", "git log", "git diff", "git branch", "git show", "git remote -v"
+      ],
+      "package_managers": {
+        "npm": ["npm list", "npm run", "npm test", "npm install", "npm ci", "npm audit"],
+        "pip": ["pip list", "pip show", "pip install", "python -m pytest", "python -m pip"],
+        "cargo": ["cargo check", "cargo test", "cargo build", "cargo clippy"],
+        "maven": ["mvn compile", "mvn test", "mvn package"],
+        "gradle": ["gradle build", "gradle test", "gradle check"]
+      },
+      "development_tools": [
+        "docker build", "docker run --rm", "docker ps", "docker images",
+        "kubectl get", "kubectl describe",
+        "terraform plan", "terraform validate"
+      ],
+      "safe_creation": [
+        "mkdir -p", "touch", "echo", "printf"
+      ]
+    },
+    "dangerous_patterns": [
+      "rm -rf", "rm -f", "del /f", "format", "sudo", "chmod 777", "chown",
+      "git push --force", "git reset --hard", "npm uninstall", "pip uninstall",
+      "shutdown", "reboot", "halt", "init 0", "init 6",
+      "dd if=", "fdisk", "mkfs", "mount", "umount"
+    ],
+    "language_detection": {
+      "javascript": {
+        "extensions": [".js", ".jsx", ".mjs", ".ts", ".tsx"],
+        "package_files": ["package.json", "package-lock.json", "yarn.lock"],
+        "config_files": ["tsconfig.json", ".eslintrc", "webpack.config.js", "vite.config.js"]
+      },
+      "python": {
+        "extensions": [".py", ".pyw", ".ipynb"],
+        "package_files": ["requirements.txt", "setup.py", "pyproject.toml", "Pipfile"],
+        "config_files": ["pytest.ini", ".flake8", "mypy.ini", "tox.ini"]
+      },
+      "rust": {
+        "extensions": [".rs"],
+        "package_files": ["Cargo.toml", "Cargo.lock"],
+        "config_files": ["rust-toolchain", "clippy.toml"]
+      },
+      "go": {
+        "extensions": [".go"],
+        "package_files": ["go.mod", "go.sum"],
+        "config_files": ["go.work", ".golangci.yml"]
+      },
+      "java": {
+        "extensions": [".java", ".kt", ".scala"],
+        "package_files": ["pom.xml", "build.gradle", "build.sbt"],
+        "config_files": ["maven.xml", "gradle.properties"]
+      },
+      "csharp": {
+        "extensions": [".cs", ".fs", ".vb"],
+        "package_files": ["*.csproj", "*.fsproj", "*.vbproj", "packages.config"],
+        "config_files": ["appsettings.json", "nuget.config"]
+      }
+    },
+    "pcam_weights": {
+      "persona_confidence": 0.2,
+      "context_relevance": 0.3,
+      "action_clarity": 0.3,
+      "metrics_reliability": 0.2
+    },
+    "execution_limits": {
+      "max_execution_time_minutes": 15,
+      "max_file_operations": 50,
+      "max_network_requests": 10,
+      "memory_limit_mb": 512
+    },
+    "monitoring": {
+      "log_level": "INFO",
+      "audit_retention_days": 30,
+      "alert_on_dangerous_commands": true,
+      "alert_on_execution_failures": true,
+      "performance_monitoring": true
+    }
+  }
+}

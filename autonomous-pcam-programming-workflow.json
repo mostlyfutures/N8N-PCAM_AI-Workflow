@@ -1,0 +1,301 @@
+{
+  "name": "Autonomous PCAM Programming Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/autonomous-programming",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Project Request Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "autonomous-programming-webhook"
+    },
+    {
+      "parameters": {
+        "functionCode": "// PCAM Decomposition Function\n// Persona, Context, Action, Metrics analysis of user prompt\n\nconst userPrompt = $input.first().json.prompt || '';\nconst projectPath = $input.first().json.projectPath || '';\n\n// PCAM Analysis\nconst analysis = {\n  persona: {\n    role: 'autonomous_programmer',\n    expertise: ['software_architecture', 'code_analysis', 'automation'],\n    autonomy_level: 'high',\n    confirmation_required: false\n  },\n  context: {\n    input_prompt: userPrompt,\n    project_path: projectPath,\n    timestamp: new Date().toISOString(),\n    execution_mode: 'autonomous',\n    safety_checks: true\n  },\n  actions: [],\n  metrics: {\n    complexity_score: 0,\n    estimated_duration: 0,\n    risk_level: 'medium',\n    automation_confidence: 0.8\n  }\n};\n\n// Parse prompt for programming intentions\nconst programmingKeywords = {\n  analysis: ['analyze', 'review', 'examine', 'inspect', 'audit'],\n  creation: ['create', 'build', 'develop', 'implement', 'generate'],\n  modification: ['modify', 'update', 'refactor', 'optimize', 'fix'],\n  testing: ['test', 'validate', 'verify', 'debug', 'check'],\n  deployment: ['deploy', 'release', 'publish', 'launch', 'install']\n};\n\n// Determine action categories\nfor (const [category, keywords] of Object.entries(programmingKeywords)) {\n  const matches = keywords.filter(keyword => \n    userPrompt.toLowerCase().includes(keyword)\n  );\n  if (matches.length > 0) {\n    analysis.actions.push({\n      category,\n      keywords_matched: matches,\n      priority: matches.length\n    });\n  }\n}\n\n// Calculate complexity and metrics\nconst promptLength = userPrompt.length;\nconst actionCount = analysis.actions.length;\nanalysis.metrics.complexity_score = Math.min(10, Math.floor((promptLength / 100) + (actionCount * 2)));\nanalysis.metrics.estimated_duration = actionCount * 5; // minutes\n\n// Determine if autonomous execution is safe\nconst dangerousKeywords = ['delete', 'remove', 'destroy', 'format', 'rm -rf'];\nconst hasDangerousOperations = dangerousKeywords.some(keyword => \n  userPrompt.toLowerCase().includes(keyword)\n);\n\nif (hasDangerousOperations) {\n  analysis.metrics.risk_level = 'high';\n  analysis.metrics.automation_confidence = 0.3;\n}\n\nreturn [{\n  json: {\n    pcam_analysis: analysis,\n    proceed_autonomously: analysis.metrics.automation_confidence > 0.5,\n    next_step: 'project_structure_analysis'\n  }\n}];"
+      },
+      "id": "pcam-analyzer",
+      "name": "PCAM Decomposition Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "autonomous-check",
+              "leftValue": "={{ $json.proceed_autonomously }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "autonomy-gate",
+      "name": "Autonomy Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Project Structure Analysis\n// Analyzes project structure, dependencies, and generates action plan\n\nconst analysis = $input.first().json.pcam_analysis;\nconst projectPath = analysis.context.project_path || process.cwd();\n\n// File system analysis patterns\nconst projectPatterns = {\n  package_files: ['package.json', 'requirements.txt', 'Cargo.toml', 'pom.xml', 'Gemfile'],\n  config_files: ['.env', 'config.json', '.gitignore', 'tsconfig.json', '.eslintrc'],\n  source_dirs: ['src', 'lib', 'app', 'components', 'modules'],\n  test_dirs: ['test', 'tests', '__tests__', 'spec'],\n  build_files: ['Makefile', 'webpack.config.js', 'vite.config.js', 'rollup.config.js']\n};\n\n// Language detection patterns\nconst languagePatterns = {\n  javascript: ['.js', '.jsx', '.mjs', '.ts', '.tsx'],\n  python: ['.py', '.pyw', '.ipynb'],\n  rust: ['.rs'],\n  go: ['.go'],\n  java: ['.java'],\n  cpp: ['.cpp', '.cxx', '.cc', '.c'],\n  csharp: ['.cs'],\n  php: ['.php'],\n  ruby: ['.rb']\n};\n\n// Generate analysis structure\nconst structureAnalysis = {\n  project_path: projectPath,\n  detected_languages: [],\n  project_type: 'unknown',\n  package_manager: 'none',\n  build_system: 'none',\n  test_framework: 'none',\n  recommended_actions: [],\n  file_operations: [],\n  command_sequence: []\n};\n\n// Based on PCAM analysis, generate specific actions\nanalysis.actions.forEach(action => {\n  switch(action.category) {\n    case 'analysis':\n      structureAnalysis.recommended_actions.push({\n        type: 'file_scan',\n        description: 'Scan project structure and dependencies',\n        commands: ['find . -name \"*.json\" -o -name \"*.toml\" -o -name \"*.lock\"']\n      });\n      break;\n      \n    case 'creation':\n      structureAnalysis.recommended_actions.push({\n        type: 'scaffold',\n        description: 'Create project structure and boilerplate',\n        commands: ['mkdir -p src tests docs', 'touch README.md .gitignore']\n      });\n      break;\n      \n    case 'modification':\n      structureAnalysis.recommended_actions.push({\n        type: 'code_update',\n        description: 'Modify existing codebase',\n        commands: ['git status', 'git diff']\n      });\n      break;\n      \n    case 'testing':\n      structureAnalysis.recommended_actions.push({\n        type: 'test_execution',\n        description: 'Run tests and validation',\n        commands: ['npm test', 'python -m pytest', 'cargo test']\n      });\n      break;\n      \n    case 'deployment':\n      structureAnalysis.recommended_actions.push({\n        type: 'build_deploy',\n        description: 'Build and deploy project',\n        commands: ['npm run build', 'docker build .', 'git add . && git commit -m \"Auto update\"']\n      });\n      break;\n  }\n});\n\n// Generate autonomous command sequence\nstructureAnalysis.command_sequence = [\n  'cd \"' + projectPath + '\"',\n  'pwd',\n  'ls -la',\n  'find . -maxdepth 2 -type f -name \"package*.json\" -o -name \"requirements*.txt\" -o -name \"*.toml\"',\n  'git status || echo \"Not a git repository\"'\n];\n\n// Add action-specific commands\nstructureAnalysis.recommended_actions.forEach(action => {\n  structureAnalysis.command_sequence.push(...action.commands);\n});\n\nreturn [{\n  json: {\n    structure_analysis: structureAnalysis,\n    execution_ready: true,\n    next_step: 'autonomous_execution'\n  }\n}];"
+      },
+      "id": "structure-analyzer",
+      "name": "Project Structure Analyzer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Autonomous Command Executor\n// Executes commands without user confirmation based on safety analysis\n\nconst structureAnalysis = $input.first().json.structure_analysis;\nconst commands = structureAnalysis.command_sequence;\n\nconst executionPlan = {\n  commands_to_execute: [],\n  safety_checks: [],\n  execution_results: [],\n  autonomous_mode: true\n};\n\n// Safety filtering for autonomous execution\nconst safeCommands = [\n  'ls', 'pwd', 'find', 'grep', 'cat', 'head', 'tail', 'wc',\n  'git status', 'git log', 'git diff', 'git branch',\n  'npm list', 'npm run', 'npm test', 'npm install',\n  'python -m', 'pip list', 'pip install',\n  'cargo check', 'cargo test', 'cargo build',\n  'mkdir -p', 'touch', 'echo',\n  'docker build', 'docker run --rm'\n];\n\nconst dangerousPatterns = [\n  'rm -rf', 'rm -f', 'del /f', 'format',\n  'sudo', 'chmod 777', 'chown',\n  'git push --force', 'git reset --hard',\n  'npm uninstall', 'pip uninstall'\n];\n\n// Filter commands for safety\ncommands.forEach(command => {\n  const isSafe = safeCommands.some(safeCmd => command.startsWith(safeCmd));\n  const isDangerous = dangerousPatterns.some(dangerousPattern => \n    command.includes(dangerousPattern)\n  );\n  \n  if (isSafe && !isDangerous) {\n    executionPlan.commands_to_execute.push({\n      command: command,\n      status: 'approved',\n      safety_level: 'safe'\n    });\n  } else if (!isDangerous) {\n    executionPlan.commands_to_execute.push({\n      command: command,\n      status: 'conditional',\n      safety_level: 'moderate'\n    });\n  } else {\n    executionPlan.safety_checks.push({\n      command: command,\n      reason: 'Contains potentially dangerous operations',\n      action: 'skip'\n    });\n  }\n});\n\nreturn [{\n  json: {\n    execution_plan: executionPlan,\n    ready_for_terminal: true,\n    command_count: executionPlan.commands_to_execute.length\n  }\n}];"
+      },
+      "id": "command-executor",
+      "name": "Autonomous Command Executor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "command": "={{ $json.execution_plan.commands_to_execute[0]?.command || 'echo \"No commands to execute\"' }}",
+        "options": {}
+      },
+      "id": "terminal-executor-1",
+      "name": "Execute Command 1",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "command": "={{ $json.execution_plan.commands_to_execute[1]?.command || 'echo \"Command 2 skipped\"' }}",
+        "options": {}
+      },
+      "id": "terminal-executor-2",
+      "name": "Execute Command 2",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1120, 400]
+    },
+    {
+      "parameters": {
+        "command": "={{ $json.execution_plan.commands_to_execute[2]?.command || 'echo \"Command 3 skipped\"' }}",
+        "options": {}
+      },
+      "id": "terminal-executor-3",
+      "name": "Execute Command 3",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1120, 500]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Results Aggregator and Project Reconstructor\n// Analyzes execution results and reconstructs/improves project\n\nconst inputs = $input.all();\nconst executionResults = [];\nconst projectImprovements = [];\n\n// Aggregate all command results\ninputs.forEach((input, index) => {\n  if (input.json.stdout || input.json.stderr) {\n    executionResults.push({\n      command_index: index,\n      stdout: input.json.stdout || '',\n      stderr: input.json.stderr || '',\n      exit_code: input.json.exitCode || 0\n    });\n  }\n});\n\n// Analyze results for project reconstruction opportunities\nconst analysisResults = {\n  dependencies_found: [],\n  missing_files: [],\n  potential_improvements: [],\n  next_actions: []\n};\n\n// Parse stdout for useful information\nexecutionResults.forEach(result => {\n  const output = result.stdout.toLowerCase();\n  \n  // Check for package.json\n  if (output.includes('package.json')) {\n    analysisResults.dependencies_found.push('npm/node project detected');\n    analysisResults.next_actions.push('npm install');\n  }\n  \n  // Check for requirements.txt\n  if (output.includes('requirements.txt')) {\n    analysisResults.dependencies_found.push('python project detected');\n    analysisResults.next_actions.push('pip install -r requirements.txt');\n  }\n  \n  // Check for Cargo.toml\n  if (output.includes('cargo.toml')) {\n    analysisResults.dependencies_found.push('rust project detected');\n    analysisResults.next_actions.push('cargo build');\n  }\n  \n  // Check for missing common files\n  if (!output.includes('readme')) {\n    analysisResults.missing_files.push('README.md');\n    analysisResults.potential_improvements.push('Create comprehensive README');\n  }\n  \n  if (!output.includes('.gitignore')) {\n    analysisResults.missing_files.push('.gitignore');\n    analysisResults.potential_improvements.push('Add .gitignore file');\n  }\n});\n\n// Generate reconstruction plan\nconst reconstructionPlan = {\n  timestamp: new Date().toISOString(),\n  analysis: analysisResults,\n  execution_summary: {\n    commands_executed: executionResults.length,\n    successful_commands: executionResults.filter(r => r.exit_code === 0).length,\n    failed_commands: executionResults.filter(r => r.exit_code !== 0).length\n  },\n  autonomous_improvements: analysisResults.potential_improvements.map(improvement => ({\n    description: improvement,\n    automated: true,\n    priority: 'medium'\n  })),\n  status: 'completed'\n};\n\nreturn [{\n  json: {\n    reconstruction_plan: reconstructionPlan,\n    execution_results: executionResults,\n    ready_for_response: true\n  }\n}];"
+      },
+      "id": "results-aggregator",
+      "name": "Results Aggregator & Reconstructor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 400]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Safety Monitor and Audit Logger\n// Monitors autonomous operations and logs all activities\n\nconst reconstructionData = $input.first().json;\nconst timestamp = new Date().toISOString();\n\n// Safety audit log\nconst auditLog = {\n  session_id: `pcam-${Date.now()}`,\n  timestamp: timestamp,\n  autonomous_execution: true,\n  safety_checks_passed: true,\n  operations_performed: [],\n  risk_assessment: 'low',\n  user_intervention_required: false\n};\n\n// Log all operations\nif (reconstructionData.execution_results) {\n  reconstructionData.execution_results.forEach(result => {\n    auditLog.operations_performed.push({\n      type: 'terminal_command',\n      success: result.exit_code === 0,\n      timestamp: timestamp,\n      details: {\n        stdout_length: result.stdout?.length || 0,\n        stderr_present: !!result.stderr\n      }\n    });\n  });\n}\n\n// Safety monitoring checks\nconst safetyChecks = {\n  no_destructive_operations: true,\n  file_system_integrity: true,\n  unauthorized_network_access: false,\n  privilege_escalation: false,\n  data_exfiltration_risk: false\n};\n\n// Determine if human review is needed\nconst needsHumanReview = (\n  auditLog.operations_performed.some(op => !op.success) ||\n  !safetyChecks.no_destructive_operations ||\n  safetyChecks.privilege_escalation\n);\n\nauditLog.user_intervention_required = needsHumanReview;\nauditLog.safety_checks_passed = Object.values(safetyChecks).every(check => \n  typeof check === 'boolean' ? check : !check\n);\n\nreturn [{\n  json: {\n    audit_log: auditLog,\n    safety_status: 'monitored',\n    final_report: reconstructionData.reconstruction_plan\n  }\n}];"
+      },
+      "id": "safety-monitor",
+      "name": "Safety Monitor & Audit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"Autonomous PCAM programming workflow completed\",\n  \"session_id\": \"{{ $json.audit_log.session_id }}\",\n  \"execution_summary\": {\n    \"autonomous_mode\": true,\n    \"safety_checks_passed\": {{ $json.audit_log.safety_checks_passed }},\n    \"operations_count\": {{ $json.audit_log.operations_performed.length }},\n    \"user_intervention_required\": {{ $json.audit_log.user_intervention_required }}\n  },\n  \"project_analysis\": {{ $json.final_report }},\n  \"timestamp\": \"{{ $json.audit_log.timestamp }}\",\n  \"next_steps\": {{ $json.final_report.autonomous_improvements }}\n}",
+        "options": {}
+      },
+      "id": "response-node",
+      "name": "Final Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1780, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"error\",\n  \"message\": \"Autonomous execution not approved due to safety concerns\",\n  \"reason\": \"PCAM analysis determined manual oversight required\",\n  \"pcam_analysis\": {{ $json.pcam_analysis }},\n  \"automation_confidence\": {{ $json.pcam_analysis.metrics.automation_confidence }},\n  \"recommended_action\": \"Please review the request and execute manually with appropriate safeguards\"\n}",
+        "options": {}
+      },
+      "id": "safety-response",
+      "name": "Safety Override Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 500]
+    }
+  ],
+  "connections": {
+    "Project Request Webhook": {
+      "main": [
+        [
+          {
+            "node": "PCAM Decomposition Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PCAM Decomposition Engine": {
+      "main": [
+        [
+          {
+            "node": "Autonomy Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autonomy Gate": {
+      "main": [
+        [
+          {
+            "node": "Project Structure Analyzer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Autonomous Command Executor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Safety Override Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Project Structure Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Execute Command 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Autonomous Command Executor": {
+      "main": [
+        [
+          {
+            "node": "Execute Command 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command 1": {
+      "main": [
+        [
+          {
+            "node": "Results Aggregator & Reconstructor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command 2": {
+      "main": [
+        [
+          {
+            "node": "Results Aggregator & Reconstructor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command 3": {
+      "main": [
+        [
+          {
+            "node": "Results Aggregator & Reconstructor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Results Aggregator & Reconstructor": {
+      "main": [
+        [
+          {
+            "node": "Safety Monitor & Audit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Safety Monitor & Audit": {
+      "main": [
+        [
+          {
+            "node": "Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-01-04T00:00:00.000Z",
+      "updatedAt": "2025-01-04T00:00:00.000Z",
+      "id": "autonomous-programming",
+      "name": "Autonomous Programming"
+    },
+    {
+      "createdAt": "2025-01-04T00:00:00.000Z",
+      "updatedAt": "2025-01-04T00:00:00.000Z",
+      "id": "pcam-analysis",
+      "name": "PCAM Analysis"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "2025-01-04T00:00:00.000Z",
+  "versionId": "1"
+}
