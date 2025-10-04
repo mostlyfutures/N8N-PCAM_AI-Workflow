@@ -2,6 +2,18 @@
 
 Command-line interface for managing PCAMAW (Persona, Context, Action, Metrics) patches and integrating with VS Code.
 
+## Quick Reference
+
+| Platform | Installation | Usage | VS Code CLI Setup |
+|----------|-------------|-------|-------------------|
+| **🍎 macOS** | `npm install && npm link` | `pcamaw list` | `Cmd+Shift+P` → "Install 'code' command" |
+| **🪟 Windows** | `npm install && npm link` | `pcamaw list` or `node bin\pcamaw.js list` | Usually automatic with VS Code install |
+| **🐧 Linux** | `npm install && sudo npm link` | `pcamaw list` | Add `/usr/share/code/bin` to PATH |
+
+**Commands:** `list`, `show`, `open`, `apply`, `stage`, `clear`  
+**Global Install:** `npm link` (makes `pcamaw` available everywhere)  
+**Local Usage:** `./bin/pcamaw.js` (macOS/Linux) or `node bin\pcamaw.js` (Windows)
+
 ## Overview
 
 The PCAMAW CLI helps you:
@@ -18,25 +30,196 @@ The PCAMAW CLI helps you:
 - Git repository initialized
 - VS Code with `code` CLI command available
 
-### Setup
+### Platform-Specific Setup
 
-1. **Install dependencies:**
-   ```bash
-   cd pcamaw-cli
-   npm install
-   ```
+<details>
+<summary><strong>🍎 macOS</strong></summary>
 
-2. **Make executable:**
-   ```bash
-   chmod +x bin/pcamaw.js
-   ```
+#### 1. Install Dependencies
+```bash
+cd pcamaw-cli
+npm install
+```
 
-3. **Link globally (optional):**
-   ```bash
-   npm link
-   ```
-   
-   After linking, you can use `pcamaw` from anywhere. Otherwise, use `./bin/pcamaw.js` from the CLI directory.
+#### 2. Make Executable
+```bash
+chmod +x bin/pcamaw.js
+```
+
+#### 3. Option A: Link Globally (Recommended)
+```bash
+npm link
+```
+Now use `pcamaw` from anywhere in your terminal.
+
+#### 4. Option B: Use Directly
+```bash
+./bin/pcamaw.js list
+```
+
+#### 5. Install VS Code CLI
+If `code` command not available:
+1. Open VS Code
+2. Press `Cmd+Shift+P`
+3. Type "Shell Command: Install 'code' command in PATH"
+4. Select and execute
+
+#### Verify Installation
+```bash
+which code        # Should show /usr/local/bin/code
+pcamaw --version  # Should show 0.1.0
+```
+
+</details>
+
+<details>
+<summary><strong>🪟 Windows</strong></summary>
+
+#### 1. Install Dependencies
+```cmd
+cd pcamaw-cli
+npm install
+```
+
+#### 2. Option A: Link Globally (Recommended)
+```cmd
+npm link
+```
+Now use `pcamaw` from any Command Prompt or PowerShell window.
+
+#### 3. Option B: Use Directly with Node
+```cmd
+node bin\pcamaw.js list
+```
+
+#### 4. Option C: Create Batch File (Advanced)
+Create `pcamaw.bat` in a directory in your PATH:
+```batch
+@echo off
+node "C:\path\to\N8N Workflow\pcamaw-cli\bin\pcamaw.js" %*
+```
+
+#### 5. Install VS Code CLI
+The `code` command should work automatically after installing VS Code.
+
+If not available:
+1. Open VS Code
+2. Press `Ctrl+Shift+P`
+3. Type "Shell Command: Install 'code' command in PATH"
+4. Select and execute
+5. Restart your terminal
+
+#### Verify Installation (PowerShell)
+```powershell
+Get-Command code    # Should show VS Code path
+pcamaw --version    # Should show 0.1.0
+```
+
+#### Verify Installation (Command Prompt)
+```cmd
+where code         # Should show VS Code path
+pcamaw --version   # Should show 0.1.0
+```
+
+#### Common Windows Issues
+
+**Issue: "pcamaw is not recognized"**
+- Solution: Use `node bin\pcamaw.js` instead, or run `npm link` as Administrator
+
+**Issue: "cannot be loaded because running scripts is disabled"**
+- Solution (PowerShell): Run as Administrator:
+  ```powershell
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+  ```
+
+</details>
+
+<details>
+<summary><strong>🐧 Linux</strong></summary>
+
+#### 1. Install Dependencies
+```bash
+cd pcamaw-cli
+npm install
+```
+
+#### 2. Make Executable
+```bash
+chmod +x bin/pcamaw.js
+```
+
+#### 3. Option A: Link Globally (Recommended)
+```bash
+npm link
+```
+Or with sudo if needed:
+```bash
+sudo npm link
+```
+
+Now use `pcamaw` from anywhere in your terminal.
+
+#### 4. Option B: Add to PATH
+Add to your `~/.bashrc` or `~/.zshrc`:
+```bash
+export PATH="$PATH:/full/path/to/pcamaw-cli/bin"
+```
+Then reload:
+```bash
+source ~/.bashrc  # or ~/.zshrc
+```
+
+#### 5. Option C: Create Symlink
+```bash
+sudo ln -s /full/path/to/pcamaw-cli/bin/pcamaw.js /usr/local/bin/pcamaw
+```
+
+#### 6. Install VS Code CLI
+If `code` command not available:
+
+**Debian/Ubuntu:**
+```bash
+# Should be installed with VS Code, if not:
+sudo update-alternatives --install /usr/bin/code code /usr/share/code/bin/code 100
+```
+
+**Or manually add to PATH:**
+Add to `~/.bashrc` or `~/.zshrc`:
+```bash
+export PATH="$PATH:/usr/share/code/bin"
+```
+
+**Snap installation:**
+If installed via Snap, use:
+```bash
+code() {
+    /snap/bin/code "$@"
+}
+```
+
+#### Verify Installation
+```bash
+which code        # Should show path to code binary
+which pcamaw      # Should show /usr/local/bin/pcamaw or npm link path
+pcamaw --version  # Should show 0.1.0
+```
+
+</details>
+
+### Quick Start (All Platforms)
+
+After installation, verify everything works:
+
+```bash
+# Check version
+pcamaw --version
+
+# View help
+pcamaw --help
+
+# Test with empty patches
+pcamaw list
+```
 
 ## Commands
 
@@ -357,6 +540,9 @@ which code
 
 ### Command not found: `pcamaw`
 
+<details>
+<summary><strong>macOS / Linux</strong></summary>
+
 **Solution 1:** Use the full path:
 ```bash
 ./bin/pcamaw.js list
@@ -365,16 +551,91 @@ which code
 **Solution 2:** Link globally:
 ```bash
 npm link
+# Or with sudo
+sudo npm link
+```
+
+**Solution 3:** Add to PATH (add to `~/.bashrc` or `~/.zshrc`):
+```bash
+export PATH="$PATH:/full/path/to/pcamaw-cli/bin"
+```
+Then reload: `source ~/.bashrc` or `source ~/.zshrc`
+
+</details>
+
+<details>
+<summary><strong>Windows</strong></summary>
+
+**Solution 1:** Use with Node:
+```cmd
+node bin\pcamaw.js list
+```
+
+**Solution 2:** Link globally (run as Administrator):
+```cmd
+npm link
 ```
 
 **Solution 3:** Add to PATH:
-```bash
-export PATH="$PATH:/path/to/pcamaw-cli/bin"
+1. Search for "Environment Variables" in Windows
+2. Edit "Path" variable
+3. Add: `C:\path\to\pcamaw-cli\bin`
+4. Restart terminal
+
+**Solution 4:** Create batch file `pcamaw.bat`:
+```batch
+@echo off
+node "C:\full\path\to\pcamaw-cli\bin\pcamaw.js" %*
 ```
+Place in a directory that's in your PATH.
+
+</details>
 
 ---
 
 ### VS Code doesn't open
+
+<details>
+<summary><strong>macOS</strong></summary>
+
+**Check if `code` command is available:**
+```bash
+which code
+# Should show: /usr/local/bin/code
+```
+
+**If not found:**
+1. Open VS Code
+2. Press `Cmd+Shift+P`
+3. Type "Shell Command: Install 'code' command in PATH"
+4. Execute
+5. Restart terminal
+
+</details>
+
+<details>
+<summary><strong>Windows</strong></summary>
+
+**Check if `code` command is available:**
+```cmd
+where code
+```
+Or PowerShell:
+```powershell
+Get-Command code
+```
+
+**If not found:**
+1. Reinstall VS Code and check "Add to PATH" during installation
+2. Or manually add to PATH:
+   - Default location: `C:\Program Files\Microsoft VS Code\bin`
+   - Add to System Environment Variables
+3. Restart terminal/PowerShell
+
+</details>
+
+<details>
+<summary><strong>Linux</strong></summary>
 
 **Check if `code` command is available:**
 ```bash
@@ -382,8 +643,29 @@ which code
 ```
 
 **If not found:**
-1. Open VS Code
-2. Cmd+Shift+P → "Install 'code' command in PATH"
+
+**Debian/Ubuntu:**
+```bash
+sudo update-alternatives --install /usr/bin/code code /usr/share/code/bin/code 100
+```
+
+**Snap installation:**
+```bash
+sudo snap install code --classic
+```
+
+**Manual PATH (add to `~/.bashrc` or `~/.zshrc`):**
+```bash
+export PATH="$PATH:/usr/share/code/bin"
+```
+Then: `source ~/.bashrc`
+
+**Verify:**
+```bash
+code --version
+```
+
+</details>
 
 ---
 
@@ -421,10 +703,96 @@ git push origin <branch>
 
 ---
 
+## Platform-Specific Usage Notes
+
+### File Paths
+
+<details>
+<summary><strong>macOS / Linux</strong></summary>
+
+Use forward slashes for paths:
+```bash
+pcamaw stage src/auth.js lib/utils.js --name "my-patch"
+```
+
+Paths are relative to current directory:
+```bash
+cd /Users/username/project
+pcamaw stage ./src/**/*.js --name "refactor"
+```
+
+</details>
+
+<details>
+<summary><strong>Windows</strong></summary>
+
+**Command Prompt:** Use backslashes or forward slashes:
+```cmd
+pcamaw stage src\auth.js lib\utils.js --name "my-patch"
+```
+
+**PowerShell:** Forward slashes work best:
+```powershell
+pcamaw stage src/auth.js lib/utils.js --name "my-patch"
+```
+
+**Git Bash on Windows:** Use forward slashes (Unix-style):
+```bash
+pcamaw stage src/auth.js lib/utils.js --name "my-patch"
+```
+
+**Important:** If using `node bin\pcamaw.js` directly, use backslashes for the bin path:
+```cmd
+node bin\pcamaw.js list
+```
+
+</details>
+
+### Shell Differences
+
+<details>
+<summary><strong>Terminal Shells Comparison</strong></summary>
+
+| Shell | Platform | Command Example |
+|-------|----------|----------------|
+| **Bash** | macOS/Linux | `pcamaw list` |
+| **Zsh** | macOS | `pcamaw list` |
+| **PowerShell** | Windows | `pcamaw list` |
+| **CMD** | Windows | `pcamaw list` |
+| **Git Bash** | Windows | `pcamaw list` |
+
+**Multi-line commands:**
+
+**Bash/Zsh (macOS/Linux):**
+```bash
+pcamaw stage file1.js file2.js \
+  --name "my-changes" \
+  --description "Updated logic"
+```
+
+**PowerShell (Windows):**
+```powershell
+pcamaw stage file1.js file2.js `
+  --name "my-changes" `
+  --description "Updated logic"
+```
+
+**CMD (Windows):**
+```cmd
+pcamaw stage file1.js file2.js ^
+  --name "my-changes" ^
+  --description "Updated logic"
+```
+
+</details>
+
+---
+
 ## Examples
 
 ### Complete Workflow Example
 
+**macOS / Linux:**
 ```bash
 # 1. List available patches from N8N workflow
 pcamaw list
@@ -439,6 +807,29 @@ pcamaw open feature-auth
 pcamaw apply feature-auth
 ```
 
+**Windows (PowerShell):**
+```powershell
+# 1. List available patches from N8N workflow
+pcamaw list
+
+# 2. Show details
+pcamaw show feature-auth
+
+# 3. Open in VS Code for review
+pcamaw open feature-auth
+
+# 4. Apply with full workflow (review → commit → push)
+pcamaw apply feature-auth
+```
+
+**Windows (if not globally linked):**
+```cmd
+node bin\pcamaw.js list
+node bin\pcamaw.js show feature-auth
+node bin\pcamaw.js open feature-auth
+node bin\pcamaw.js apply feature-auth
+```
+
 ### Quick Apply Without Review
 
 ```bash
@@ -447,11 +838,27 @@ pcamaw apply bugfix-validation --auto-push
 
 ### Stage and Apply Later
 
+**macOS / Linux:**
 ```bash
 # Stage changes
 git add src/utils/validation.js
 pcamaw stage src/utils/validation.js \
   --name "improve-validation" \
+  --description "Add email validation"
+
+# Reset to keep as patch only
+git reset HEAD src/utils/validation.js
+
+# Apply later
+pcamaw apply improve-validation
+```
+
+**Windows (PowerShell):**
+```powershell
+# Stage changes
+git add src/utils/validation.js
+pcamaw stage src/utils/validation.js `
+  --name "improve-validation" `
   --description "Add email validation"
 
 # Reset to keep as patch only
