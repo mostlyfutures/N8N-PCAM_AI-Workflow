@@ -7,41 +7,49 @@ This N8N workflow implements a sophisticated autonomous programming assistant th
 ## Key Features
 
 ### 🤖 PCAM Decomposition Engine
-- **Persona Analysis**: Identifies the role (autonomous programmer) and required expertise
-- **Context Analysis**: Processes user prompts, project paths, and execution parameters  
-- **Action Analysis**: Categorizes programming intentions (analysis, creation, modification, testing, deployment)
-- **Metrics Analysis**: Calculates complexity scores, risk levels, and automation confidence
+- Weighted backend/UI-UX keyword detection to bias downstream plans.
+- PCAM metrics drive an autonomy score; execution only proceeds when confidence > 55%.
+
+### 📘 Project Blueprint Awareness
+- Automatically ingests `priv/project.md` (or provided path) to surface roadmap tasks.
+- Extracts backend and UI/UX to-do lists that get folded into execution plans.
+
+### 🧭 Backend & UI/UX Planner
+- Shapes separate command queues for backend, UI/UX, and general setup work.
+- Anchors commands around project conventions (Truffle, Next.js linting, modal scaffolds, etc.).
 
 ### 🔒 Autonomous Safety System
-- **Command Filtering**: Only executes pre-approved safe commands
-- **Risk Assessment**: Blocks potentially dangerous operations
-- **Safety Monitoring**: Continuous audit logging and integrity checks
-- **Autonomous Threshold**: Only proceeds when confidence > 50%
+- Filters commands against a curated allowlist and blocks destructive patterns.
+- Records every skipped or failing command for later review.
 
-### 🏗️ Project Structure Intelligence
-- **Multi-Language Detection**: Supports JavaScript, Python, Rust, Go, Java, C++, C#, PHP, Ruby
-- **Package Manager Recognition**: npm, pip, cargo, maven, bundler detection
-- **Build System Analysis**: webpack, vite, make, gradle identification
-- **Dependency Management**: Automatic dependency installation and updates
-
-### ⚡ Autonomous Execution Engine
-- **No Manual Confirmation**: Executes approved commands automatically
-- **Parallel Processing**: Multiple command execution streams
-- **Result Aggregation**: Intelligent analysis of execution outcomes
-- **Project Reconstruction**: Automatic improvements based on analysis
+### 📊 Results & Audit Reporting
+- Summarizes completion ratios per track (backend / UI/UX / general).
+- Produces audit reports with outstanding commands and safety incidents before responding.
 
 ## Workflow Architecture
 
 ```
-Webhook Trigger → PCAM Analysis → Safety Gate → Structure Analysis
-                                      ↓              ↓
-                               Safety Override → Command Execution
-                                              ↓         ↓
-                                         Results Aggregation
-                                              ↓
-                                        Safety Monitoring
-                                              ↓
-                                         Final Response
+Webhook Trigger
+  ↓
+PCAM Decomposition Engine
+  ↓
+Project Blueprint Loader
+  ↓
+Autonomy Gate ───────────────┐
+  ↓ (approved)               │
+Project Structure Analyzer   │
+  ↓                          │
+Autonomous Command Planner   │
+  ↓                          │
+Autonomous Command Runner    │
+  ↓                          │
+Results Aggregator           │
+  ↓                          │
+Safety Monitor & Audit       │
+  ↓                          │
+Final Response Composer ◀────┘
+  ↓
+Webhook Response
 ```
 
 ## Usage
@@ -50,6 +58,8 @@ Webhook Trigger → PCAM Analysis → Safety Gate → Structure Analysis
 1. Import `autonomous-pcam-programming-workflow.json` into your N8N instance
 2. Activate the workflow
 3. Note the webhook URL provided by N8N
+
+> **Note:** Keep `priv/project.md` (or your custom blueprint file) accessible to the N8N worker so the workflow can derive backend/UI-UX tasks.
 
 ### 2. Send Programming Requests
 
@@ -135,80 +145,88 @@ npm uninstall, pip uninstall
 
 ## Response Format
 
-### Successful Autonomous Execution
+### Autonomous Response Body (sent by `Webhook Response` node)
 ```json
 {
-  "status": "success",
-  "message": "Autonomous PCAM programming workflow completed",
-  "session_id": "pcam-1704326400000",
-  "execution_summary": {
-    "autonomous_mode": true,
-    "safety_checks_passed": true,
-    "operations_count": 5,
-    "user_intervention_required": false
+  "prompt": "Wire up the create market UI and confirm backend tests",
+  "status": "partial",
+  "summary": "Backend: 67% complete | UI/UX: 33% complete | General: 100% complete",
+  "outstanding": {
+    "backend": ["npx truffle test"],
+    "uiux": ["find components -maxdepth 1 -name \"*CreateMarket*\" || echo \"Market creation modal missing\""] ,
+    "general": []
   },
-  "project_analysis": {
-    "dependencies_found": ["npm/node project detected"],
-    "missing_files": [".gitignore"],
-    "potential_improvements": ["Add .gitignore file"],
-    "next_actions": ["npm install"]
-  },
-  "timestamp": "2025-01-04T00:00:00.000Z",
-  "next_steps": [
+  "safetyAlerts": [
     {
-      "description": "Add .gitignore file", 
-      "automated": true,
-      "priority": "medium"
+      "command": "rm -rf .next",
+      "category": "general",
+      "reason": "Command blocked by safety policy"
     }
-  ]
+  ],
+  "auditReport": {
+    "manual_review_required": true,
+    "incidents": [
+      {
+        "type": "blocked_command",
+        "command": "rm -rf .next",
+        "category": "general",
+        "message": "Command blocked by safety policy"
+      }
+    ]
+  }
 }
 ```
 
-### Safety Override Response
+### Manual Review Bypass (Autonomy Gate false)
+When PCAM confidence stays below threshold, the workflow short-circuits to the response composer with a guidance payload similar to:
+
 ```json
 {
-  "status": "error",
-  "message": "Autonomous execution not approved due to safety concerns",
-  "reason": "PCAM analysis determined manual oversight required",
-  "automation_confidence": 0.3,
-  "recommended_action": "Please review the request and execute manually with appropriate safeguards"
+  "prompt": "Deploy to production and clean the server",
+  "status": "manual-review-required",
+  "summary": "Automation paused: autonomy score below safety threshold",
+  "outstanding": {},
+  "safetyAlerts": [],
+  "auditReport": {
+    "manual_review_required": true,
+    "incidents": []
+  }
 }
 ```
 
 ## Advanced Configuration
 
 ### Extending Safe Commands
-Add new command patterns to the `safeCommands` array in the "Autonomous Command Executor" node:
+Tweak the allowlist in the **Autonomous Command Planner** node (`safePrefixes` array) to enable additional trusted commands:
 
 ```javascript
-const safeCommands = [
-  // ... existing commands
-  'your-safe-command',
-  'another-safe-pattern'
+const safePrefixes = [
+  // ... existing prefixes
+  'npm run custom-script',
+  'npx playwright test'
 ];
 ```
 
+Add any sensitive patterns that should always be blocked to the `dangerousPatterns` array in the same node.
+
 ### Adjusting Automation Confidence Threshold
-Modify the confidence threshold in the "PCAM Decomposition Engine":
+Update the PCAM confidence threshold inside the **PCAM Decomposition Engine**:
 
 ```javascript
-// Current: proceeds when confidence > 0.5 (50%)
-// Increase for higher safety: > 0.8 (80%)  
-// Decrease for more automation: > 0.3 (30%)
-proceed_autonomously: analysis.metrics.automation_confidence > 0.5
+const proceedAutonomously = analysis.metrics.automation_confidence > 0.55;
 ```
 
-### Adding Language Support
-Extend the `languagePatterns` object in "Project Structure Analyzer":
+Raise the threshold for stricter control (e.g., `> 0.75`) or lower it for more autonomy (e.g., `> 0.4`).
 
-```javascript
-const languagePatterns = {
-  // ... existing patterns
-  kotlin: ['.kt', '.kts'],
-  swift: ['.swift'],
-  dart: ['.dart']
-};
+### Custom Blueprint Location
+Set the `PROJECT_BLUEPRINT_PATH` environment variable (or edit the candidate list in **Project Blueprint Loader**) to look up alternative documents, e.g.:
+
+```bash
+export PROJECT_BLUEPRINT_PATH=/workspace/specs/backend_uiux.md
 ```
+
+### Adding Project-Specific Plans
+Inject additional backend/UI-UX tasks in **Project Structure Analyzer** by appending to the `addBackendPlan` / `addUiuxPlan` calls.
 
 ## Security Considerations
 

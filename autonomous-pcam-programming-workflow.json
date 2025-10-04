@@ -12,18 +12,37 @@
       "name": "Project Request Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "webhookId": "autonomous-programming-webhook"
     },
     {
       "parameters": {
-        "functionCode": "// PCAM Decomposition Function\n// Persona, Context, Action, Metrics analysis of user prompt\n\nconst userPrompt = $input.first().json.prompt || '';\nconst projectPath = $input.first().json.projectPath || '';\n\n// PCAM Analysis\nconst analysis = {\n  persona: {\n    role: 'autonomous_programmer',\n    expertise: ['software_architecture', 'code_analysis', 'automation'],\n    autonomy_level: 'high',\n    confirmation_required: false\n  },\n  context: {\n    input_prompt: userPrompt,\n    project_path: projectPath,\n    timestamp: new Date().toISOString(),\n    execution_mode: 'autonomous',\n    safety_checks: true\n  },\n  actions: [],\n  metrics: {\n    complexity_score: 0,\n    estimated_duration: 0,\n    risk_level: 'medium',\n    automation_confidence: 0.8\n  }\n};\n\n// Parse prompt for programming intentions\nconst programmingKeywords = {\n  analysis: ['analyze', 'review', 'examine', 'inspect', 'audit'],\n  creation: ['create', 'build', 'develop', 'implement', 'generate'],\n  modification: ['modify', 'update', 'refactor', 'optimize', 'fix'],\n  testing: ['test', 'validate', 'verify', 'debug', 'check'],\n  deployment: ['deploy', 'release', 'publish', 'launch', 'install']\n};\n\n// Determine action categories\nfor (const [category, keywords] of Object.entries(programmingKeywords)) {\n  const matches = keywords.filter(keyword => \n    userPrompt.toLowerCase().includes(keyword)\n  );\n  if (matches.length > 0) {\n    analysis.actions.push({\n      category,\n      keywords_matched: matches,\n      priority: matches.length\n    });\n  }\n}\n\n// Calculate complexity and metrics\nconst promptLength = userPrompt.length;\nconst actionCount = analysis.actions.length;\nanalysis.metrics.complexity_score = Math.min(10, Math.floor((promptLength / 100) + (actionCount * 2)));\nanalysis.metrics.estimated_duration = actionCount * 5; // minutes\n\n// Determine if autonomous execution is safe\nconst dangerousKeywords = ['delete', 'remove', 'destroy', 'format', 'rm -rf'];\nconst hasDangerousOperations = dangerousKeywords.some(keyword => \n  userPrompt.toLowerCase().includes(keyword)\n);\n\nif (hasDangerousOperations) {\n  analysis.metrics.risk_level = 'high';\n  analysis.metrics.automation_confidence = 0.3;\n}\n\nreturn [{\n  json: {\n    pcam_analysis: analysis,\n    proceed_autonomously: analysis.metrics.automation_confidence > 0.5,\n    next_step: 'project_structure_analysis'\n  }\n}];"
+        "functionCode": "const input = $input.first().json || {};\nconst userPrompt = (input.prompt || '').trim();\nconst projectPath = input.projectPath || '';\n\nconst backendKeywords = ['smart contract', 'backend', 'api', 'truffle', 'wagmi', 'viem', 'server', 'database', 'deployment', 'factory', 'market', 'solidity', 'migration'];\nconst uiuxKeywords = ['ui', 'ux', 'frontend', 'component', 'navbar', 'button', 'modal', 'page', 'design', 'layout', 'form', 'user experience', 'next.js', 'react'];\nconst infrastructureKeywords = ['devops', 'monitoring', 'pipeline', 'ci', 'network', 'environment'];\n\nconst normalizedPrompt = userPrompt.toLowerCase();\nconst backendMatches = backendKeywords.filter(keyword => normalizedPrompt.includes(keyword));\nconst uiuxMatches = uiuxKeywords.filter(keyword => normalizedPrompt.includes(keyword));\nconst infraMatches = infrastructureKeywords.filter(keyword => normalizedPrompt.includes(keyword));\n\nconst analysis = {\n  persona: {\n    role: 'autonomous_programmer',\n    expertise: ['software_architecture', 'code_analysis', 'automation', 'uiux_strategy'],\n    autonomy_level: 'high',\n    confirmation_required: false\n  },\n  context: {\n    input_prompt: userPrompt,\n    project_path: projectPath,\n    timestamp: new Date().toISOString(),\n    execution_mode: 'agentic',\n    safety_checks: true\n  },\n  actions: [],\n  metrics: {\n    complexity_score: 0,\n    estimated_duration: 0,\n    risk_level: 'medium',\n    automation_confidence: 0.82,\n    backend_focus_weight: backendMatches.length,\n    uiux_focus_weight: uiuxMatches.length\n  },\n  focus_areas: {\n    backend: backendMatches.length > 0,\n    uiux: uiuxMatches.length > 0,\n    infrastructure: infraMatches.length > 0\n  },\n  tags: {\n    backend_hits: backendMatches.length,\n    uiux_hits: uiuxMatches.length,\n    project_path_supplied: Boolean(projectPath)\n  },\n  guiding_objectives: [\n    'Maintain repository safety and auditability',\n    'Advance project structure toward completion milestones',\n    'Balance backend robustness with UI/UX readiness'\n  ]\n};\n\nconst programmingKeywords = {\n  analysis: ['analyze', 'review', 'examine', 'inspect', 'audit'],\n  creation: ['create', 'build', 'develop', 'implement', 'generate'],\n  modification: ['modify', 'update', 'refactor', 'optimize', 'fix'],\n  testing: ['test', 'validate', 'verify', 'debug', 'check'],\n  deployment: ['deploy', 'release', 'publish', 'launch', 'install']\n};\n\nfor (const [category, keywords] of Object.entries(programmingKeywords)) {\n  const matches = keywords.filter(keyword => normalizedPrompt.includes(keyword));\n  if (matches.length > 0) {\n    analysis.actions.push({\n      category,\n      keywords_matched: matches,\n      priority: matches.length\n    });\n  }\n}\n\nif (analysis.focus_areas.backend && !analysis.actions.some(action => action.category === 'analysis')) {\n  analysis.actions.push({\n    category: 'analysis',\n    keywords_matched: ['backend-focus'],\n    priority: 1\n  });\n}\n\nif (analysis.focus_areas.uiux && !analysis.actions.some(action => action.category === 'creation')) {\n  analysis.actions.push({\n    category: 'creation',\n    keywords_matched: ['uiux-focus'],\n    priority: 1\n  });\n}\n\nconst promptLength = userPrompt.length;\nconst actionCount = analysis.actions.length;\nanalysis.metrics.complexity_score = Math.min(10, Math.floor((promptLength / 90) + (actionCount * 1.5)));\nanalysis.metrics.estimated_duration = Math.max(5, actionCount * 6);\n\nconst dangerousKeywords = ['delete', 'remove', 'destroy', 'format', 'rm -rf', 'shutdown'];\nconst hasDangerousOperations = dangerousKeywords.some(keyword => normalizedPrompt.includes(keyword));\n\nif (hasDangerousOperations) {\n  analysis.metrics.risk_level = 'high';\n  analysis.metrics.automation_confidence = 0.35;\n} else if (analysis.focus_areas.backend && analysis.focus_areas.uiux) {\n  analysis.metrics.automation_confidence = Math.min(0.92, analysis.metrics.automation_confidence + 0.05);\n}\n\nreturn [{\n  json: {\n    prompt: userPrompt,\n    projectPath,\n    pcam_analysis: analysis,\n    proceed_autonomously: analysis.metrics.automation_confidence > 0.55,\n    next_step: 'project_blueprint_ingest'\n  }\n}];"
       },
       "id": "pcam-analyzer",
       "name": "PCAM Decomposition Engine",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [460, 300]
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $input.first().json || {};\nconst analysis = input.pcam_analysis || {};\nconst projectPath = analysis.context?.project_path || input.projectPath || process.cwd();\n\nconst fs = require('fs');\nconst path = require('path');\n\nconst candidatePaths = [];\nif (process.env.PROJECT_BLUEPRINT_PATH) {\n  candidatePaths.push(process.env.PROJECT_BLUEPRINT_PATH);\n}\ncandidatePaths.push(path.join(projectPath || '.', 'priv', 'project.md'));\ncandidatePaths.push(path.join(process.cwd(), 'priv', 'project.md'));\ncandidatePaths.push(path.join(projectPath || '.', 'README.md'));\n\nlet blueprintContent = '';\nlet blueprintPath = '';\nfor (const candidate of candidatePaths) {\n  try {\n    if (candidate && fs.existsSync(candidate)) {\n      blueprintContent = fs.readFileSync(candidate, 'utf-8');\n      blueprintPath = candidate;\n      break;\n    }\n  } catch (error) {\n    continue;\n  }\n}\n\nconst lowerContent = blueprintContent.toLowerCase();\nconst backendSignals = [];\nconst uiuxSignals = [];\nconst additionalNotes = [];\n\nif (lowerContent.includes('create market button')) {\n  backendSignals.push('Ensure smart contract createMarket integration');\n  uiuxSignals.push('Add Create Market button to navbar with modal');\n}\nif (lowerContent.includes('market creation modal') || lowerContent.includes('market creation form')) {\n  uiuxSignals.push('Implement market creation modal component');\n}\nif (lowerContent.includes('portfolio') && lowerContent.includes('positions')) {\n  backendSignals.push('Validate portfolio data aggregation against contract positions');\n}\nif (lowerContent.includes('images') || lowerContent.includes('icons')) {\n  uiuxSignals.push('Add placeholder imagery or category icons for markets');\n}\nif (lowerContent.includes('auto-switch') || lowerContent.includes('network switching')) {\n  uiuxSignals.push('Implement Base Sepolia auto-switch UX');\n}\nif (lowerContent.includes('test market creation flow')) {\n  backendSignals.push('Automate market creation test flow in development environment');\n}\n\nif (!blueprintContent && analysis.focus_areas.backend) {\n  additionalNotes.push('Blueprint file missing; fall back to prompt-driven backend objectives.');\n}\nif (!blueprintContent && analysis.focus_areas.uiux) {\n  additionalNotes.push('Blueprint file missing; fall back to prompt-driven UI/UX objectives.');\n}\n\nconst snippet = blueprintContent ? blueprintContent.slice(0, 4000) : '';\n\nreturn [{\n  json: {\n    ...input,\n    pcam_analysis: analysis,\n    project_blueprint: {\n      path: blueprintPath,\n      snippet,\n      backend_tasks: Array.from(new Set(backendSignals)),\n      uiux_tasks: Array.from(new Set(uiuxSignals)),\n      additional_notes: additionalNotes\n    },\n    next_step: 'project_structure_analysis'\n  }\n}];"
+      },
+      "id": "project-blueprint-loader",
+      "name": "Project Blueprint Loader",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        300
+      ]
     },
     {
       "parameters": {
@@ -52,104 +71,103 @@
       "name": "Autonomy Gate",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [680, 300]
+      "position": [
+        820,
+        300
+      ]
     },
     {
       "parameters": {
-        "functionCode": "// Project Structure Analysis\n// Analyzes project structure, dependencies, and generates action plan\n\nconst analysis = $input.first().json.pcam_analysis;\nconst projectPath = analysis.context.project_path || process.cwd();\n\n// File system analysis patterns\nconst projectPatterns = {\n  package_files: ['package.json', 'requirements.txt', 'Cargo.toml', 'pom.xml', 'Gemfile'],\n  config_files: ['.env', 'config.json', '.gitignore', 'tsconfig.json', '.eslintrc'],\n  source_dirs: ['src', 'lib', 'app', 'components', 'modules'],\n  test_dirs: ['test', 'tests', '__tests__', 'spec'],\n  build_files: ['Makefile', 'webpack.config.js', 'vite.config.js', 'rollup.config.js']\n};\n\n// Language detection patterns\nconst languagePatterns = {\n  javascript: ['.js', '.jsx', '.mjs', '.ts', '.tsx'],\n  python: ['.py', '.pyw', '.ipynb'],\n  rust: ['.rs'],\n  go: ['.go'],\n  java: ['.java'],\n  cpp: ['.cpp', '.cxx', '.cc', '.c'],\n  csharp: ['.cs'],\n  php: ['.php'],\n  ruby: ['.rb']\n};\n\n// Generate analysis structure\nconst structureAnalysis = {\n  project_path: projectPath,\n  detected_languages: [],\n  project_type: 'unknown',\n  package_manager: 'none',\n  build_system: 'none',\n  test_framework: 'none',\n  recommended_actions: [],\n  file_operations: [],\n  command_sequence: []\n};\n\n// Based on PCAM analysis, generate specific actions\nanalysis.actions.forEach(action => {\n  switch(action.category) {\n    case 'analysis':\n      structureAnalysis.recommended_actions.push({\n        type: 'file_scan',\n        description: 'Scan project structure and dependencies',\n        commands: ['find . -name \"*.json\" -o -name \"*.toml\" -o -name \"*.lock\"']\n      });\n      break;\n      \n    case 'creation':\n      structureAnalysis.recommended_actions.push({\n        type: 'scaffold',\n        description: 'Create project structure and boilerplate',\n        commands: ['mkdir -p src tests docs', 'touch README.md .gitignore']\n      });\n      break;\n      \n    case 'modification':\n      structureAnalysis.recommended_actions.push({\n        type: 'code_update',\n        description: 'Modify existing codebase',\n        commands: ['git status', 'git diff']\n      });\n      break;\n      \n    case 'testing':\n      structureAnalysis.recommended_actions.push({\n        type: 'test_execution',\n        description: 'Run tests and validation',\n        commands: ['npm test', 'python -m pytest', 'cargo test']\n      });\n      break;\n      \n    case 'deployment':\n      structureAnalysis.recommended_actions.push({\n        type: 'build_deploy',\n        description: 'Build and deploy project',\n        commands: ['npm run build', 'docker build .', 'git add . && git commit -m \"Auto update\"']\n      });\n      break;\n  }\n});\n\n// Generate autonomous command sequence\nstructureAnalysis.command_sequence = [\n  'cd \"' + projectPath + '\"',\n  'pwd',\n  'ls -la',\n  'find . -maxdepth 2 -type f -name \"package*.json\" -o -name \"requirements*.txt\" -o -name \"*.toml\"',\n  'git status || echo \"Not a git repository\"'\n];\n\n// Add action-specific commands\nstructureAnalysis.recommended_actions.forEach(action => {\n  structureAnalysis.command_sequence.push(...action.commands);\n});\n\nreturn [{\n  json: {\n    structure_analysis: structureAnalysis,\n    execution_ready: true,\n    next_step: 'autonomous_execution'\n  }\n}];"
+        "functionCode": "const input = $input.first().json || {};\nconst analysis = input.pcam_analysis || {};\nconst blueprint = input.project_blueprint || {};\nconst projectPath = analysis.context?.project_path || process.cwd();\n\nconst projectPatterns = {\n  package_files: ['package.json', 'pnpm-lock.yaml', 'yarn.lock', 'requirements.txt', 'Cargo.toml', 'pom.xml', 'Gemfile'],\n  config_files: ['.env', 'config.json', '.gitignore', 'tsconfig.json', '.eslintrc', 'next.config.js'],\n  source_dirs: ['src', 'lib', 'app', 'components', 'modules'],\n  test_dirs: ['test', 'tests', '__tests__', 'spec'],\n  build_files: ['Makefile', 'webpack.config.js', 'vite.config.js', 'rollup.config.js']\n};\n\nconst structureAnalysis = {\n  project_path: projectPath,\n  detected_indicators: projectPatterns,\n  project_type: 'nextjs-monorepo',\n  package_manager: 'npm',\n  build_system: 'nextjs',\n  test_framework: 'jest',\n  recommended_actions: [],\n  backend_plan: [],\n  uiux_plan: [],\n  command_sequence: [\n    'ls -la',\n    'git status || echo \"Not a git repository\"',\n    'npm install',\n    'npm run lint || echo \"Lint script missing\"'\n  ],\n  blueprint_summary: {\n    backend_tasks: blueprint.backend_tasks || [],\n    uiux_tasks: blueprint.uiux_tasks || []\n  }\n};\n\nconst focusBackend = Boolean(analysis.focus_areas?.backend);\nconst focusUiux = Boolean(analysis.focus_areas?.uiux);\n\nconst addBackendPlan = (title, description, commands, priority = 'high') => {\n  structureAnalysis.backend_plan.push({ title, description, commands, priority });\n};\nconst addUiuxPlan = (title, description, commands, priority = 'high') => {\n  structureAnalysis.uiux_plan.push({ title, description, commands, priority });\n};\n\nif (focusBackend) {\n  addBackendPlan(\n    'Run Truffle contract tests',\n    'Validate PredictionMarketFactory behaviors using Truffle test suite',\n    ['npx truffle test'],\n    'critical'\n  );\n  addBackendPlan(\n    'Verify deployed contract metadata',\n    'Check Base Sepolia deployment details via helper script',\n    ['node test-contract.js'],\n    'high'\n  );\n  addBackendPlan(\n    'Audit migration scripts',\n    'Ensure deployment scripts reference PredictionMarketFactory correctly',\n    ['grep -R \"PredictionMarketFactory\" migrations || echo \"Migration references incomplete\"'],\n    'medium'\n  );\n}\n\nif (focusUiux) {\n  addUiuxPlan(\n    'Validate Create Market UI presence',\n    'Confirm navbar includes Create Market entry point for market creation flow',\n    ['test -f components/Navbar.tsx && grep -R \"Create Market\" components/Navbar.tsx || echo \"Create Market button missing\"'],\n    'critical'\n  );\n  addUiuxPlan(\n    'Ensure market modal scaffold exists',\n    'Check for modal component scaffolding for market creation',\n    ['find components -maxdepth 1 -name \"*CreateMarket*\" || echo \"Market creation modal missing\"'],\n    'high'\n  );\n  addUiuxPlan(\n    'Run Next.js linting for UX regressions',\n    'Execute Next.js lint step to capture accessibility and UX warnings',\n    ['npx next lint || echo \"Next lint unavailable\"'],\n    'medium'\n  );\n}\n\n(blueprint.backend_tasks || []).forEach(task => {\n  addBackendPlan(\n    `Blueprint: ${task}`,\n    'Task surfaced from project blueprint requirements',\n    ['echo \"[Backend Blueprint] ' + task.replace(/\"/g, '\\\\\"') + '\"'],\n    'medium'\n  );\n});\n\n(blueprint.uiux_tasks || []).forEach(task => {\n  addUiuxPlan(\n    `Blueprint: ${task}`,\n    'UI/UX requirement sourced from project blueprint',\n    ['echo \"[UI/UX Blueprint] ' + task.replace(/\"/g, '\\\\\"') + '\"'],\n    'medium'\n  );\n});\n\nreturn [{\n  json: {\n    ...input,\n    structure_analysis: structureAnalysis,\n    execution_ready: true,\n    next_step: 'autonomous_execution_plan'\n  }\n}];"
       },
       "id": "structure-analyzer",
       "name": "Project Structure Analyzer",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [900, 200]
+      "position": [
+        1030,
+        160
+      ]
     },
     {
       "parameters": {
-        "functionCode": "// Autonomous Command Executor\n// Executes commands without user confirmation based on safety analysis\n\nconst structureAnalysis = $input.first().json.structure_analysis;\nconst commands = structureAnalysis.command_sequence;\n\nconst executionPlan = {\n  commands_to_execute: [],\n  safety_checks: [],\n  execution_results: [],\n  autonomous_mode: true\n};\n\n// Safety filtering for autonomous execution\nconst safeCommands = [\n  'ls', 'pwd', 'find', 'grep', 'cat', 'head', 'tail', 'wc',\n  'git status', 'git log', 'git diff', 'git branch',\n  'npm list', 'npm run', 'npm test', 'npm install',\n  'python -m', 'pip list', 'pip install',\n  'cargo check', 'cargo test', 'cargo build',\n  'mkdir -p', 'touch', 'echo',\n  'docker build', 'docker run --rm'\n];\n\nconst dangerousPatterns = [\n  'rm -rf', 'rm -f', 'del /f', 'format',\n  'sudo', 'chmod 777', 'chown',\n  'git push --force', 'git reset --hard',\n  'npm uninstall', 'pip uninstall'\n];\n\n// Filter commands for safety\ncommands.forEach(command => {\n  const isSafe = safeCommands.some(safeCmd => command.startsWith(safeCmd));\n  const isDangerous = dangerousPatterns.some(dangerousPattern => \n    command.includes(dangerousPattern)\n  );\n  \n  if (isSafe && !isDangerous) {\n    executionPlan.commands_to_execute.push({\n      command: command,\n      status: 'approved',\n      safety_level: 'safe'\n    });\n  } else if (!isDangerous) {\n    executionPlan.commands_to_execute.push({\n      command: command,\n      status: 'conditional',\n      safety_level: 'moderate'\n    });\n  } else {\n    executionPlan.safety_checks.push({\n      command: command,\n      reason: 'Contains potentially dangerous operations',\n      action: 'skip'\n    });\n  }\n});\n\nreturn [{\n  json: {\n    execution_plan: executionPlan,\n    ready_for_terminal: true,\n    command_count: executionPlan.commands_to_execute.length\n  }\n}];"
+        "functionCode": "const input = $input.first().json || {};\nconst structureAnalysis = input.structure_analysis || {};\nconst projectPath = structureAnalysis.project_path || process.cwd();\n\nconst safePrefixes = [\n  'ls', 'pwd', 'find', 'grep', 'cat', 'head', 'tail', 'wc',\n  'git status', 'git log', 'git diff',\n  'npm list', 'npm run', 'npm test', 'npm install', 'npm ci',\n  'npx truffle', 'npx next', 'npx eslint',\n  'node ', 'test -', 'echo', 'printf'\n];\n\nconst dangerousPatterns = [\n  'rm -rf', 'rm -f', 'del /f', 'format',\n  'sudo', 'chmod 777', 'chown',\n  'git push --force', 'git reset --hard',\n  'npm uninstall', 'pip uninstall', 'shutdown', 'reboot'\n];\n\nconst executionPlan = {\n  project_path: projectPath,\n  general: [],\n  backend: [],\n  uiux: [],\n  safety_checks: [],\n  metadata: {\n    generated_at: new Date().toISOString(),\n    backend_focus: structureAnalysis.backend_plan?.length || 0,\n    uiux_focus: structureAnalysis.uiux_plan?.length || 0\n  }\n};\n\nconst evaluateCommand = (command, category, context) => {\n  const trimmed = command.trim();\n  const isDangerous = dangerousPatterns.some(pattern => trimmed.includes(pattern));\n  const isSafe = safePrefixes.some(prefix => trimmed.startsWith(prefix));\n\n  if (isDangerous) {\n    executionPlan.safety_checks.push({\n      command: trimmed,\n      category,\n      reason: 'Command blocked by safety policy',\n      action: 'skipped'\n    });\n    return {\n      command: trimmed,\n      category,\n      status: 'blocked',\n      safety_level: 'blocked',\n      context\n    };\n  }\n\n  return {\n    command: trimmed,\n    category,\n    status: isSafe ? 'approved' : 'conditional',\n    safety_level: isSafe ? 'safe' : 'moderate',\n    context\n  };\n};\n\n(structureAnalysis.command_sequence || []).forEach(cmd => {\n  executionPlan.general.push(evaluateCommand(cmd, 'general', { source: 'structure_sequence' }));\n});\n\n(structureAnalysis.backend_plan || []).forEach(action => {\n  (action.commands || []).forEach(cmd => {\n    executionPlan.backend.push(evaluateCommand(cmd, 'backend', { title: action.title, priority: action.priority }));\n  });\n});\n\n(structureAnalysis.uiux_plan || []).forEach(action => {\n  (action.commands || []).forEach(cmd => {\n    executionPlan.uiux.push(evaluateCommand(cmd, 'uiux', { title: action.title, priority: action.priority }));\n  });\n});\n\nreturn [{\n  json: {\n    ...input,\n    execution_plan: executionPlan,\n    command_count: executionPlan.general.length + executionPlan.backend.length + executionPlan.uiux.length,\n    next_step: 'autonomous_command_runner'\n  }\n}];"
       },
-      "id": "command-executor",
-      "name": "Autonomous Command Executor",
+      "id": "command-planner",
+      "name": "Autonomous Command Planner",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [900, 400]
+      "position": [
+        1240,
+        160
+      ]
     },
     {
       "parameters": {
-        "command": "={{ $json.execution_plan.commands_to_execute[0]?.command || 'echo \"No commands to execute\"' }}",
-        "options": {}
+        "functionCode": "const input = $input.first().json || {};\nconst executionPlan = input.execution_plan || {};\nconst structureAnalysis = input.structure_analysis || {};\nconst projectPath = executionPlan.project_path || structureAnalysis.project_path || process.cwd();\n\nconst { execSync } = require('child_process');\n\nconst runCommandGroup = (entries = [], category) => {\n  return entries.map(entry => {\n    if (entry.status === 'blocked') {\n      return { ...entry, success: false, skipped: true, reason: 'blocked_by_policy' };\n    }\n    if (!['approved', 'conditional'].includes(entry.status)) {\n      return { ...entry, success: false, skipped: true, reason: 'not_approved' };\n    }\n\n    try {\n      const stdout = execSync(entry.command, {\n        cwd: projectPath,\n        timeout: 20000,\n        maxBuffer: 5 * 1024 * 1024,\n        encoding: 'utf-8',\n        stdio: ['ignore', 'pipe', 'pipe']\n      });\n      return { ...entry, success: true, skipped: false, stdout, stderr: '', exitCode: 0, category };\n    } catch (error) {\n      return {\n        ...entry,\n        success: false,\n        skipped: false,\n        stdout: error.stdout ? error.stdout.toString() : '',\n        stderr: error.stderr ? error.stderr.toString() : (error.message || ''),\n        exitCode: typeof error.status === 'number' ? error.status : 1,\n        category\n      };\n    }\n  });\n};\n\nconst generalResults = runCommandGroup(executionPlan.general, 'general');\nconst backendResults = runCommandGroup(executionPlan.backend, 'backend');\nconst uiuxResults = runCommandGroup(executionPlan.uiux, 'uiux');\n\nreturn [{\n  json: {\n    ...input,\n    command_results: {\n      general: generalResults,\n      backend: backendResults,\n      uiux: uiuxResults\n    },\n    next_step: 'results_aggregation'\n  }\n}];"
       },
-      "id": "terminal-executor-1",
-      "name": "Execute Command 1",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [1120, 300]
+      "id": "command-runner",
+      "name": "Autonomous Command Runner",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        160
+      ]
     },
     {
       "parameters": {
-        "command": "={{ $json.execution_plan.commands_to_execute[1]?.command || 'echo \"Command 2 skipped\"' }}",
-        "options": {}
-      },
-      "id": "terminal-executor-2",
-      "name": "Execute Command 2",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [1120, 400]
-    },
-    {
-      "parameters": {
-        "command": "={{ $json.execution_plan.commands_to_execute[2]?.command || 'echo \"Command 3 skipped\"' }}",
-        "options": {}
-      },
-      "id": "terminal-executor-3",
-      "name": "Execute Command 3",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": [1120, 500]
-    },
-    {
-      "parameters": {
-        "functionCode": "// Results Aggregator and Project Reconstructor\n// Analyzes execution results and reconstructs/improves project\n\nconst inputs = $input.all();\nconst executionResults = [];\nconst projectImprovements = [];\n\n// Aggregate all command results\ninputs.forEach((input, index) => {\n  if (input.json.stdout || input.json.stderr) {\n    executionResults.push({\n      command_index: index,\n      stdout: input.json.stdout || '',\n      stderr: input.json.stderr || '',\n      exit_code: input.json.exitCode || 0\n    });\n  }\n});\n\n// Analyze results for project reconstruction opportunities\nconst analysisResults = {\n  dependencies_found: [],\n  missing_files: [],\n  potential_improvements: [],\n  next_actions: []\n};\n\n// Parse stdout for useful information\nexecutionResults.forEach(result => {\n  const output = result.stdout.toLowerCase();\n  \n  // Check for package.json\n  if (output.includes('package.json')) {\n    analysisResults.dependencies_found.push('npm/node project detected');\n    analysisResults.next_actions.push('npm install');\n  }\n  \n  // Check for requirements.txt\n  if (output.includes('requirements.txt')) {\n    analysisResults.dependencies_found.push('python project detected');\n    analysisResults.next_actions.push('pip install -r requirements.txt');\n  }\n  \n  // Check for Cargo.toml\n  if (output.includes('cargo.toml')) {\n    analysisResults.dependencies_found.push('rust project detected');\n    analysisResults.next_actions.push('cargo build');\n  }\n  \n  // Check for missing common files\n  if (!output.includes('readme')) {\n    analysisResults.missing_files.push('README.md');\n    analysisResults.potential_improvements.push('Create comprehensive README');\n  }\n  \n  if (!output.includes('.gitignore')) {\n    analysisResults.missing_files.push('.gitignore');\n    analysisResults.potential_improvements.push('Add .gitignore file');\n  }\n});\n\n// Generate reconstruction plan\nconst reconstructionPlan = {\n  timestamp: new Date().toISOString(),\n  analysis: analysisResults,\n  execution_summary: {\n    commands_executed: executionResults.length,\n    successful_commands: executionResults.filter(r => r.exit_code === 0).length,\n    failed_commands: executionResults.filter(r => r.exit_code !== 0).length\n  },\n  autonomous_improvements: analysisResults.potential_improvements.map(improvement => ({\n    description: improvement,\n    automated: true,\n    priority: 'medium'\n  })),\n  status: 'completed'\n};\n\nreturn [{\n  json: {\n    reconstruction_plan: reconstructionPlan,\n    execution_results: executionResults,\n    ready_for_response: true\n  }\n}];"
+        "functionCode": "const input = $input.first().json || {};\nconst executionPlan = input.execution_plan || {};\nconst commandResults = input.command_results || {};\n\nconst summarizeCategory = (results = []) => {\n  const total = results.length;\n  const successes = results.filter(item => item.success).length;\n  const failures = results.filter(item => !item.success && !item.skipped).length;\n  const skipped = results.filter(item => item.skipped).length;\n  return { total, successes, failures, skipped, completion: total ? successes / total : 0 };\n};\n\nconst backendSummary = summarizeCategory(commandResults.backend);\nconst uiuxSummary = summarizeCategory(commandResults.uiux);\nconst generalSummary = summarizeCategory(commandResults.general);\n\nconst outstandingBackend = commandResults.backend?.filter(item => !item.success)?.map(item => item.command) || [];\nconst outstandingUiux = commandResults.uiux?.filter(item => !item.success)?.map(item => item.command) || [];\nconst outstandingGeneral = commandResults.general?.filter(item => !item.success)?.map(item => item.command) || [];\n\nconst overallStatus = (() => {\n  const categories = [backendSummary, uiuxSummary, generalSummary];\n  if (categories.every(cat => cat.total === 0)) return 'no-commands';\n  if (categories.every(cat => cat.completion === 1)) return 'completed';\n  if (categories.some(cat => cat.failures > 0)) return 'partial';\n  return 'partial';\n})();\n\nconst responsePayload = {\n  prompt: input.prompt || '',\n  projectPath: input.projectPath || executionPlan.project_path || '',\n  status: overallStatus,\n  backend: backendSummary,\n  uiux: uiuxSummary,\n  general: generalSummary,\n  outstanding: {\n    backend: outstandingBackend,\n    uiux: outstandingUiux,\n    general: outstandingGeneral\n  },\n  safetyAlerts: executionPlan.safety_checks || []\n};\n\nreturn [{\n  json: {\n    ...input,\n    execution_summary: {\n      backend: backendSummary,\n      uiux: uiuxSummary,\n      general: generalSummary,\n      status: overallStatus\n    },\n    response_payload: responsePayload,\n    next_step: 'safety_audit'\n  }\n}];"
       },
       "id": "results-aggregator",
       "name": "Results Aggregator & Reconstructor",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1340, 400]
+      "position": [
+        1640,
+        160
+      ]
     },
     {
       "parameters": {
-        "functionCode": "// Safety Monitor and Audit Logger\n// Monitors autonomous operations and logs all activities\n\nconst reconstructionData = $input.first().json;\nconst timestamp = new Date().toISOString();\n\n// Safety audit log\nconst auditLog = {\n  session_id: `pcam-${Date.now()}`,\n  timestamp: timestamp,\n  autonomous_execution: true,\n  safety_checks_passed: true,\n  operations_performed: [],\n  risk_assessment: 'low',\n  user_intervention_required: false\n};\n\n// Log all operations\nif (reconstructionData.execution_results) {\n  reconstructionData.execution_results.forEach(result => {\n    auditLog.operations_performed.push({\n      type: 'terminal_command',\n      success: result.exit_code === 0,\n      timestamp: timestamp,\n      details: {\n        stdout_length: result.stdout?.length || 0,\n        stderr_present: !!result.stderr\n      }\n    });\n  });\n}\n\n// Safety monitoring checks\nconst safetyChecks = {\n  no_destructive_operations: true,\n  file_system_integrity: true,\n  unauthorized_network_access: false,\n  privilege_escalation: false,\n  data_exfiltration_risk: false\n};\n\n// Determine if human review is needed\nconst needsHumanReview = (\n  auditLog.operations_performed.some(op => !op.success) ||\n  !safetyChecks.no_destructive_operations ||\n  safetyChecks.privilege_escalation\n);\n\nauditLog.user_intervention_required = needsHumanReview;\nauditLog.safety_checks_passed = Object.values(safetyChecks).every(check => \n  typeof check === 'boolean' ? check : !check\n);\n\nreturn [{\n  json: {\n    audit_log: auditLog,\n    safety_status: 'monitored',\n    final_report: reconstructionData.reconstruction_plan\n  }\n}];"
+        "functionCode": "const input = $input.first().json || {};\nconst executionPlan = input.execution_plan || {};\nconst commandResults = input.command_results || {};\n\nconst incidents = [];\n(executionPlan.safety_checks || []).forEach(entry => {\n  incidents.push({\n    type: 'blocked_command',\n    command: entry.command,\n    category: entry.category,\n    message: entry.reason || 'Command blocked'\n  });\n});\n\n['general', 'backend', 'uiux'].forEach(category => {\n  (commandResults[category] || []).forEach(result => {\n    if (!result.success && !result.skipped) {\n      incidents.push({\n        type: 'execution_failure',\n        command: result.command,\n        category,\n        exitCode: result.exitCode,\n        stderr: result.stderr\n      });\n    }\n  });\n});\n\nconst manualReviewRequired = incidents.length > 0;\n\nconst auditReport = {\n  timestamp: new Date().toISOString(),\n  incidents,\n  blocked_commands: executionPlan.safety_checks || [],\n  manual_review_required: manualReviewRequired,\n  recommended_follow_up: incidents.length\n    ? incidents.map(incident => `Review ${incident.category} command: ${incident.command}`)\n    : []\n};\n\nreturn [{\n  json: {\n    ...input,\n    audit_report: auditReport,\n    next_step: 'final_response'\n  }\n}];"
       },
       "id": "safety-monitor",
       "name": "Safety Monitor & Audit",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1560, 400]
+      "position": [
+        1840,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $input.first().json || {};\nconst hasAutonomousRun = Boolean(input.response_payload);\nconst payload = hasAutonomousRun ? (input.response_payload || {}) : {\n  prompt: input.prompt || '',\n  status: 'manual-review-required',\n  outstanding: {},\n  safetyAlerts: [],\n  backend: { completion: 0 },\n  uiux: { completion: 0 },\n  general: { completion: 0 }\n};\n\nconst audit = input.audit_report || {\n  manual_review_required: !hasAutonomousRun,\n  incidents: [],\n  blocked_commands: [],\n  recommended_follow_up: []\n};\n\nconst summaryText = payload.summary || (\n  typeof payload.backend?.completion === 'number' &&\n  typeof payload.uiux?.completion === 'number' &&\n  typeof payload.general?.completion === 'number'\n    ? `Backend: ${Math.round((payload.backend?.completion || 0) * 100)}% complete | UI/UX: ${Math.round((payload.uiux?.completion || 0) * 100)}% complete | General: ${Math.round((payload.general?.completion || 0) * 100)}% complete`\n    : 'Automation paused: autonomy score below safety threshold'\n);\n\nconst status = payload.status || (audit.manual_review_required && !hasAutonomousRun ? 'manual-review-required' : 'completed');\nconst statusCode = audit.manual_review_required && !hasAutonomousRun ? 202 : (audit.manual_review_required ? 207 : 200);\n\nreturn [{\n  json: {\n    statusCode,\n    body: {\n      prompt: payload.prompt,\n      status,\n      summary: summaryText,\n      outstanding: payload.outstanding || {},\n      safetyAlerts: payload.safetyAlerts || [],\n      auditReport: audit\n    }\n  }\n}];"
+      },
+      "id": "response-composer",
+      "name": "Final Response Composer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2040,
+        160
+      ]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\n  \"status\": \"success\",\n  \"message\": \"Autonomous PCAM programming workflow completed\",\n  \"session_id\": \"{{ $json.audit_log.session_id }}\",\n  \"execution_summary\": {\n    \"autonomous_mode\": true,\n    \"safety_checks_passed\": {{ $json.audit_log.safety_checks_passed }},\n    \"operations_count\": {{ $json.audit_log.operations_performed.length }},\n    \"user_intervention_required\": {{ $json.audit_log.user_intervention_required }}\n  },\n  \"project_analysis\": {{ $json.final_report }},\n  \"timestamp\": \"{{ $json.audit_log.timestamp }}\",\n  \"next_steps\": {{ $json.final_report.autonomous_improvements }}\n}",
-        "options": {}
+        "responseBody": "={{ $json.body }}",
+        "responseCode": "={{ $json.statusCode || 200 }}"
       },
-      "id": "response-node",
-      "name": "Final Response",
+      "id": "webhook-response",
+      "name": "Webhook Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1780, 400]
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={\n  \"status\": \"error\",\n  \"message\": \"Autonomous execution not approved due to safety concerns\",\n  \"reason\": \"PCAM analysis determined manual oversight required\",\n  \"pcam_analysis\": {{ $json.pcam_analysis }},\n  \"automation_confidence\": {{ $json.pcam_analysis.metrics.automation_confidence }},\n  \"recommended_action\": \"Please review the request and execute manually with appropriate safeguards\"\n}",
-        "options": {}
-      },
-      "id": "safety-response",
-      "name": "Safety Override Response",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
-      "position": [680, 500]
+      "position": [
+        2240,
+        160
+      ]
     }
   ],
   "connections": {
@@ -168,6 +186,17 @@
       "main": [
         [
           {
+            "node": "Project Blueprint Loader",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Project Blueprint Loader": {
+      "main": [
+        [
+          {
             "node": "Autonomy Gate",
             "type": "main",
             "index": 0
@@ -182,16 +211,11 @@
             "node": "Project Structure Analyzer",
             "type": "main",
             "index": 0
-          },
-          {
-            "node": "Autonomous Command Executor",
-            "type": "main",
-            "index": 0
           }
         ],
         [
           {
-            "node": "Safety Override Response",
+            "node": "Final Response Composer",
             "type": "main",
             "index": 0
           }
@@ -202,47 +226,25 @@
       "main": [
         [
           {
-            "node": "Execute Command 1",
+            "node": "Autonomous Command Planner",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Autonomous Command Executor": {
+    "Autonomous Command Planner": {
       "main": [
         [
           {
-            "node": "Execute Command 2",
+            "node": "Autonomous Command Runner",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute Command 1": {
-      "main": [
-        [
-          {
-            "node": "Results Aggregator & Reconstructor",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute Command 2": {
-      "main": [
-        [
-          {
-            "node": "Results Aggregator & Reconstructor",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute Command 3": {
+    "Autonomous Command Runner": {
       "main": [
         [
           {
@@ -268,7 +270,18 @@
       "main": [
         [
           {
-            "node": "Final Response",
+            "node": "Final Response Composer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Response Composer": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
             "type": "main",
             "index": 0
           }
@@ -284,18 +297,18 @@
   "tags": [
     {
       "createdAt": "2025-01-04T00:00:00.000Z",
-      "updatedAt": "2025-01-04T00:00:00.000Z",
+      "updatedAt": "2025-10-04T00:00:00.000Z",
       "id": "autonomous-programming",
       "name": "Autonomous Programming"
     },
     {
       "createdAt": "2025-01-04T00:00:00.000Z",
-      "updatedAt": "2025-01-04T00:00:00.000Z",
+      "updatedAt": "2025-10-04T00:00:00.000Z",
       "id": "pcam-analysis",
       "name": "PCAM Analysis"
     }
   ],
   "triggerCount": 0,
-  "updatedAt": "2025-01-04T00:00:00.000Z",
-  "versionId": "1"
+  "updatedAt": "2025-10-04T00:00:00.000Z",
+  "versionId": "2"
 }
