@@ -1,0 +1,147 @@
+{
+  "name": "Autonomous PCAM Programming Assistant v2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/autonomous-programming",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Project Request Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "autonomous-programming-webhook"
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $input.first().json || {};\nconst userPrompt = (input.prompt || '').trim();\nconst projectPath = input.projectPath || '';\n\nconst backendKeywords = ['smart contract', 'backend', 'api', 'truffle', 'wagmi', 'viem', 'server', 'database', 'deployment', 'factory', 'market', 'solidity', 'migration'];\nconst uiuxKeywords = ['ui', 'ux', 'frontend', 'component', 'navbar', 'button', 'modal', 'page', 'design', 'layout', 'form', 'user experience', 'next.js', 'react'];\nconst fileOperationKeywords = ['create file', 'write file', 'update file', 'generate', 'scaffold', 'boilerplate'];\n\nconst normalizedPrompt = userPrompt.toLowerCase();\nconst backendMatches = backendKeywords.filter(keyword => normalizedPrompt.includes(keyword));\nconst uiuxMatches = uiuxKeywords.filter(keyword => normalizedPrompt.includes(keyword));\nconst fileOpMatches = fileOperationKeywords.filter(keyword => normalizedPrompt.includes(keyword));\n\nconst analysis = {\n  persona: {\n    role: 'autonomous_programmer',\n    expertise: ['software_architecture', 'code_analysis', 'automation', 'uiux_strategy', 'file_generation'],\n    autonomy_level: 'high',\n    confirmation_required: false\n  },\n  context: {\n    input_prompt: userPrompt,\n    project_path: projectPath,\n    timestamp: new Date().toISOString(),\n    execution_mode: 'agentic',\n    safety_checks: true\n  },\n  actions: [],\n  metrics: {\n    complexity_score: 0,\n    estimated_duration: 0,\n    risk_level: 'medium',\n    automation_confidence: 0.82,\n    backend_focus_weight: backendMatches.length,\n    uiux_focus_weight: uiuxMatches.length,\n    file_operation_weight: fileOpMatches.length\n  },\n  focus_areas: {\n    backend: backendMatches.length > 0,\n    uiux: uiuxMatches.length > 0,\n    file_operations: fileOpMatches.length > 0\n  },\n  tags: {\n    backend_hits: backendMatches.length,\n    uiux_hits: uiuxMatches.length,\n    file_op_hits: fileOpMatches.length,\n    project_path_supplied: Boolean(projectPath)\n  }\n};\n\nconst programmingKeywords = {\n  analysis: ['analyze', 'review', 'examine', 'inspect', 'audit'],\n  creation: ['create', 'build', 'develop', 'implement', 'generate'],\n  modification: ['modify', 'update', 'refactor', 'optimize', 'fix'],\n  testing: ['test', 'validate', 'verify', 'debug', 'check'],\n  deployment: ['deploy', 'release', 'publish', 'launch', 'install']\n};\n\nfor (const [category, keywords] of Object.entries(programmingKeywords)) {\n  const matches = keywords.filter(keyword => normalizedPrompt.includes(keyword));\n  if (matches.length > 0) {\n    analysis.actions.push({ category, keywords_matched: matches, priority: matches.length });\n  }\n}\n\nconst promptLength = userPrompt.length;\nconst actionCount = analysis.actions.length;\nanalysis.metrics.complexity_score = Math.min(10, Math.floor((promptLength / 90) + (actionCount * 1.5)));\nanalysis.metrics.estimated_duration = Math.max(5, actionCount * 6);\n\nconst dangerousKeywords = ['delete', 'remove', 'destroy', 'format', 'rm -rf', 'shutdown'];\nconst hasDangerousOperations = dangerousKeywords.some(keyword => normalizedPrompt.includes(keyword));\n\nif (hasDangerousOperations) {\n  analysis.metrics.risk_level = 'high';\n  analysis.metrics.automation_confidence = 0.35;\n} else if (analysis.focus_areas.backend && analysis.focus_areas.uiux) {\n  analysis.metrics.automation_confidence = Math.min(0.92, analysis.metrics.automation_confidence + 0.05);\n}\n\nreturn [{ json: { prompt: userPrompt, projectPath, pcam_analysis: analysis, proceed_autonomously: analysis.metrics.automation_confidence > 0.55, next_step: 'config_and_blueprint_loader' } }];"
+      },
+      "id": "pcam-analyzer",
+      "name": "PCAM Decomposition Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $input.first().json || {};\nconst analysis = input.pcam_analysis || {};\nconst projectPath = analysis.context?.project_path || input.projectPath || process.cwd();\n\nconst fs = require('fs');\nconst path = require('path');\n\nconst defaultConfig = {\n  safety: {\n    automation_confidence_threshold: 0.55,\n    max_commands_per_session: 10,\n    command_timeout_seconds: 30,\n    enable_audit_logging: true,\n    require_project_path: false,\n    sandbox_mode: false,\n    allowed_file_extensions: ['.md', '.mdx', '.txt', '.json', '.ts', '.tsx', '.js', '.jsx', '.css', '.scss', '.gitignore', '.env.example'],\n    max_file_bytes: 50000,\n    max_template_lines: 1000,\n    enable_file_writing: true,\n    require_file_approval: false\n  },\n  approved_commands: {\n    file_operations: ['ls', 'pwd', 'find', 'grep', 'cat', 'head', 'tail', 'wc', 'file', 'stat'],\n    git_operations: ['git status', 'git log', 'git diff', 'git branch', 'git show', 'git remote -v'],\n    package_managers: {\n      npm: ['npm list', 'npm run', 'npm test', 'npm install', 'npm ci', 'npm audit'],\n      pip: ['pip list', 'pip show', 'pip install', 'python -m pytest'],\n      cargo: ['cargo check', 'cargo test', 'cargo build'],\n      maven: ['mvn compile', 'mvn test', 'mvn package'],\n      gradle: ['gradle build', 'gradle test']\n    },\n    safe_creation: ['mkdir -p', 'touch', 'echo']\n  },\n  dangerous_patterns: [\n    'rm -rf', 'rm -f', 'del /f', 'format', 'sudo', 'chmod 777', 'chown',\n    'git push --force', 'git reset --hard', 'npm uninstall', 'shutdown', 'reboot'\n  ]\n};\n\nlet safetyConfig = { ...defaultConfig };\nconst configCandidates = [\n  process.env.AUTONOMOUS_CONFIG_PATH,\n  path.join(projectPath || '.', 'config.json'),\n  path.join(process.cwd(), 'config.json')\n].filter(Boolean);\n\nfor (const candidate of configCandidates) {\n  try {\n    if (fs.existsSync(candidate)) {\n      const parsed = JSON.parse(fs.readFileSync(candidate, 'utf-8'));\n      const config = parsed.autonomous_programming_config || parsed;\n      safetyConfig = {\n        ...defaultConfig,\n        ...config,\n        safety: { ...defaultConfig.safety, ...(config.safety || {}) },\n        approved_commands: { ...defaultConfig.approved_commands, ...(config.approved_commands || {}) },\n        dangerous_patterns: config.dangerous_patterns || defaultConfig.dangerous_patterns\n      };\n      break;\n    }\n  } catch (error) { continue; }\n}\n\nconst blueprintPaths = [\n  process.env.PROJECT_BLUEPRINT_PATH,\n  path.join(projectPath || '.', 'priv', 'project.md'),\n  path.join(process.cwd(), 'priv', 'project.md'),\n  path.join(projectPath || '.', 'README.md')\n].filter(Boolean);\n\nlet blueprintContent = '', blueprintPath = '';\nfor (const candidate of blueprintPaths) {\n  try {\n    if (fs.existsSync(candidate)) {\n      blueprintContent = fs.readFileSync(candidate, 'utf-8');\n      blueprintPath = candidate;\n      break;\n    }\n  } catch (error) { continue; }\n}\n\nconst lowerContent = blueprintContent.toLowerCase();\nconst backendTasks = [], uiuxTasks = [], fileTasks = [];\n\nif (lowerContent.includes('create market button')) uiuxTasks.push('Add Create Market button to navbar');\nif (lowerContent.includes('market creation modal')) uiuxTasks.push('Implement CreateMarketModal component');\nif (lowerContent.includes('gitignore') || lowerContent.includes('.gitignore')) fileTasks.push('Create .gitignore file');\nif (lowerContent.includes('readme') && lowerContent.includes('missing')) fileTasks.push('Generate README.md');\nif (lowerContent.includes('contract test')) backendTasks.push('Run Truffle tests');\n\nreturn [{\n  json: {\n    ...input,\n    pcam_analysis: analysis,\n    safety_config: safetyConfig,\n    project_blueprint: {\n      path: blueprintPath,\n      snippet: blueprintContent.slice(0, 3000),\n      backend_tasks: backendTasks,\n      uiux_tasks: uiuxTasks,\n      file_tasks: fileTasks\n    },\n    next_step: 'autonomy_gate'\n  }\n}];"
+      },
+      "id": "config-blueprint-loader",
+      "name": "Config & Blueprint Loader",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [{
+            "id": "autonomous-check",
+            "leftValue": "={{ $json.proceed_autonomously }}",
+            "rightValue": true,
+            "operator": { "type": "boolean", "operation": "equal" }
+          }],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "autonomy-gate",
+      "name": "Autonomy Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $input.first().json || {};\nconst analysis = input.pcam_analysis || {};\nconst safetyConfig = input.safety_config || {};\nconst blueprint = input.project_blueprint || {};\nconst projectPath = analysis.context?.project_path || process.cwd();\n\nconst executionPlan = {\n  project_path: projectPath,\n  commands: [],\n  file_operations: [],\n  safety_enabled: true,\n  file_writing_enabled: safetyConfig.safety?.enable_file_writing || false\n};\n\nconst focusFileOps = analysis.focus_areas?.file_operations || false;\nconst focusBackend = analysis.focus_areas?.backend || false;\nconst focusUiux = analysis.focus_areas?.uiux || false;\n\nif (focusFileOps || (blueprint.file_tasks && blueprint.file_tasks.length > 0)) {\n  (blueprint.file_tasks || []).forEach(task => {\n    if (task.includes('.gitignore')) {\n      executionPlan.file_operations.push({\n        type: 'create',\n        file_path: '.gitignore',\n        content_template: 'node_gitignore',\n        reason: 'Missing .gitignore for Node.js project',\n        priority: 'high'\n      });\n    }\n    if (task.includes('README')) {\n      executionPlan.file_operations.push({\n        type: 'create',\n        file_path: 'README.md',\n        content_template: 'basic_readme',\n        reason: 'Project documentation missing',\n        priority: 'medium'\n      });\n    }\n  });\n}\n\nif (focusBackend) {\n  executionPlan.commands.push({ cmd: 'npm install', category: 'backend', priority: 'high' });\n  executionPlan.commands.push({ cmd: 'npx truffle test', category: 'backend', priority: 'critical' });\n}\n\nif (focusUiux) {\n  executionPlan.commands.push({ cmd: 'npx next lint', category: 'uiux', priority: 'medium' });\n}\n\nreturn [{ json: { ...input, execution_plan: executionPlan, next_step: 'command_runner' } }];"
+      },
+      "id": "execution-planner",
+      "name": "Execution Planner",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 160]
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $input.first().json || {};\nconst executionPlan = input.execution_plan || {};\nconst safetyConfig = input.safety_config || {};\nconst projectPath = executionPlan.project_path || process.cwd();\n\nconst { execSync } = require('child_process');\nconst fs = require('fs');\nconst path = require('path');\n\nconst safePrefixes = ['ls', 'pwd', 'find', 'grep', 'cat', 'npm list', 'npm run', 'npm test', 'npm install', 'npm ci', 'npx truffle', 'npx next', 'git status', 'git log', 'git diff'];\nconst dangerousPatterns = safetyConfig.dangerous_patterns || ['rm -rf', 'sudo', 'shutdown'];\n\nconst commandResults = [];\nfor (const entry of (executionPlan.commands || [])) {\n  const cmd = entry.cmd || '';\n  const isDangerous = dangerousPatterns.some(pattern => cmd.includes(pattern));\n  const isSafe = safePrefixes.some(prefix => cmd.startsWith(prefix));\n\n  if (isDangerous) {\n    commandResults.push({ ...entry, status: 'blocked', reason: 'Dangerous command' });\n    continue;\n  }\n\n  if (!isSafe) {\n    commandResults.push({ ...entry, status: 'skipped', reason: 'Not in safe command list' });\n    continue;\n  }\n\n  try {\n    const stdout = execSync(cmd, { cwd: projectPath, timeout: 20000, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'] });\n    commandResults.push({ ...entry, status: 'success', stdout: stdout.slice(0, 500) });\n  } catch (error) {\n    commandResults.push({ ...entry, status: 'failed', stderr: (error.stderr || error.message || '').slice(0, 500) });\n  }\n}\n\nreturn [{ json: { ...input, command_results: commandResults, next_step: 'file_writer' } }];"
+      },
+      "id": "command-runner",
+      "name": "Command Runner",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 160]
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $input.first().json || {};\nconst executionPlan = input.execution_plan || {};\nconst safetyConfig = input.safety_config || {};\nconst projectPath = executionPlan.project_path || process.cwd();\n\nconst fs = require('fs');\nconst path = require('path');\n\nconst fileWritingEnabled = safetyConfig.safety?.enable_file_writing !== false;\nconst allowedExtensions = safetyConfig.safety?.allowed_file_extensions || ['.md', '.txt', '.json', '.gitignore'];\nconst maxBytes = safetyConfig.safety?.max_file_bytes || 50000;\n\nconst templates = {\n  node_gitignore: `node_modules/\\n.env\\n.env.local\\n.DS_Store\\ndist/\\nbuild/\\ncoverage/\\n*.log\\n.vscode/\\n.idea/`,\n  basic_readme: `# Project\\n\\n## Overview\\nAutomatically generated project documentation.\\n\\n## Setup\\n\\`\\`\\`bash\\nnpm install\\n\\`\\`\\`\\n\\n## Usage\\nRefer to package.json scripts.\\n`\n};\n\nconst fileResults = [];\n\nif (!fileWritingEnabled) {\n  return [{ json: { ...input, file_results: [{ status: 'disabled', message: 'File writing disabled in config' }], next_step: 'results_aggregator' } }];\n}\n\nfor (const fileOp of (executionPlan.file_operations || [])) {\n  const filePath = path.join(projectPath, fileOp.file_path || '');\n  const ext = path.extname(filePath);\n\n  if (!allowedExtensions.includes(ext) && ext !== '') {\n    fileResults.push({ ...fileOp, status: 'blocked', reason: `Extension ${ext} not in allowed list` });\n    continue;\n  }\n\n  let content = '';\n  if (fileOp.content_template && templates[fileOp.content_template]) {\n    content = templates[fileOp.content_template];\n  } else if (fileOp.content) {\n    content = fileOp.content;\n  } else {\n    fileResults.push({ ...fileOp, status: 'skipped', reason: 'No content or template provided' });\n    continue;\n  }\n\n  if (content.length > maxBytes) {\n    fileResults.push({ ...fileOp, status: 'blocked', reason: `Content exceeds max size (${maxBytes} bytes)` });\n    continue;\n  }\n\n  try {\n    if (fs.existsSync(filePath)) {\n      fileResults.push({ ...fileOp, status: 'skipped', reason: 'File already exists', file_path: filePath });\n      continue;\n    }\n\n    const dir = path.dirname(filePath);\n    if (!fs.existsSync(dir)) {\n      fs.mkdirSync(dir, { recursive: true });\n    }\n\n    fs.writeFileSync(filePath, content, 'utf-8');\n    fileResults.push({ ...fileOp, status: 'success', file_path: filePath, bytes_written: content.length });\n  } catch (error) {\n    fileResults.push({ ...fileOp, status: 'failed', reason: error.message });\n  }\n}\n\nreturn [{ json: { ...input, file_results: fileResults, next_step: 'results_aggregator' } }];"
+      },
+      "id": "file-writer",
+      "name": "Safe File Writer",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 160]
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $input.first().json || {};\nconst commandResults = input.command_results || [];\nconst fileResults = input.file_results || [];\n\nconst summary = {\n  commands: {\n    total: commandResults.length,\n    success: commandResults.filter(r => r.status === 'success').length,\n    failed: commandResults.filter(r => r.status === 'failed').length,\n    blocked: commandResults.filter(r => r.status === 'blocked').length,\n    skipped: commandResults.filter(r => r.status === 'skipped').length\n  },\n  files: {\n    total: fileResults.length,\n    success: fileResults.filter(r => r.status === 'success').length,\n    failed: fileResults.filter(r => r.status === 'failed').length,\n    blocked: fileResults.filter(r => r.status === 'blocked').length,\n    skipped: fileResults.filter(r => r.status === 'skipped').length\n  }\n};\n\nconst filesCreated = fileResults.filter(r => r.status === 'success').map(r => r.file_path || r.file_path);\nconst commandsExecuted = commandResults.filter(r => r.status === 'success').map(r => r.cmd);\n\nconst overallStatus = (summary.commands.success > 0 || summary.files.success > 0) ? 'partial-success' : 'no-changes';\n\nreturn [{\n  json: {\n    statusCode: 200,\n    body: {\n      status: overallStatus,\n      summary,\n      files_created: filesCreated,\n      commands_executed: commandsExecuted,\n      timestamp: new Date().toISOString()\n    }\n  }\n}];"
+      },
+      "id": "results-aggregator",
+      "name": "Results Aggregator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 160]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.body }}",
+        "responseCode": "={{ $json.statusCode || 200 }}"
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2000, 160]
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $input.first().json || {};\nconst analysis = input.pcam_analysis || {};\n\nreturn [{\n  json: {\n    statusCode: 202,\n    body: {\n      status: 'manual-review-required',\n      message: 'Automation confidence below threshold',\n      confidence: analysis.metrics?.automation_confidence || 0,\n      reason: 'Safety gate triggered - requires manual approval',\n      prompt: input.prompt || ''\n    }\n  }\n}];"
+      },
+      "id": "manual-review-response",
+      "name": "Manual Review Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 440]
+    }
+  ],
+  "connections": {
+    "Project Request Webhook": { "main": [[{ "node": "PCAM Decomposition Engine", "type": "main", "index": 0 }]] },
+    "PCAM Decomposition Engine": { "main": [[{ "node": "Config & Blueprint Loader", "type": "main", "index": 0 }]] },
+    "Config & Blueprint Loader": { "main": [[{ "node": "Autonomy Gate", "type": "main", "index": 0 }]] },
+    "Autonomy Gate": {
+      "main": [
+        [{ "node": "Execution Planner", "type": "main", "index": 0 }],
+        [{ "node": "Manual Review Response", "type": "main", "index": 0 }]
+      ]
+    },
+    "Execution Planner": { "main": [[{ "node": "Command Runner", "type": "main", "index": 0 }]] },
+    "Command Runner": { "main": [[{ "node": "Safe File Writer", "type": "main", "index": 0 }]] },
+    "Safe File Writer": { "main": [[{ "node": "Results Aggregator", "type": "main", "index": 0 }]] },
+    "Results Aggregator": { "main": [[{ "node": "Webhook Response", "type": "main", "index": 0 }]] },
+    "Manual Review Response": { "main": [[{ "node": "Webhook Response", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "tags": [
+    { "createdAt": "2025-10-04T00:00:00.000Z", "updatedAt": "2025-10-04T00:00:00.000Z", "id": "autonomous-programming", "name": "Autonomous Programming" },
+    { "createdAt": "2025-10-04T00:00:00.000Z", "updatedAt": "2025-10-04T00:00:00.000Z", "id": "file-operations", "name": "File Operations" }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "2025-10-04T00:00:00.000Z",
+  "versionId": "2"
+}

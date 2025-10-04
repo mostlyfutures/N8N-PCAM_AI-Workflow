@@ -18,7 +18,14 @@ This N8N workflow implements a sophisticated autonomous programming assistant th
 - Shapes separate command queues for backend, UI/UX, and general setup work.
 - Anchors commands around project conventions (Truffle, Next.js linting, modal scaffolds, etc.).
 
-### 🔒 Autonomous Safety System
+### � Safe File Writing (v2)
+- Creates files with approved extensions (.md, .json, .ts, .tsx, .js, .jsx, .css, .gitignore)
+- Uses templates for common files (.gitignore, README.md)
+- Enforces size limits (50KB default)
+- Prevents accidental file overwrites
+- Respects custom configuration
+
+### �🔒 Autonomous Safety System
 - Filters commands against a curated allowlist and blocks destructive patterns.
 - Records every skipped or failing command for later review.
 
@@ -28,36 +35,45 @@ This N8N workflow implements a sophisticated autonomous programming assistant th
 
 ## Workflow Architecture
 
+**V1 (Command Execution Only):**
 ```
-Webhook Trigger
-  ↓
-PCAM Decomposition Engine
-  ↓
-Project Blueprint Loader
-  ↓
-Autonomy Gate ───────────────┐
-  ↓ (approved)               │
-Project Structure Analyzer   │
-  ↓                          │
-Autonomous Command Planner   │
-  ↓                          │
-Autonomous Command Runner    │
-  ↓                          │
-Results Aggregator           │
-  ↓                          │
-Safety Monitor & Audit       │
-  ↓                          │
-Final Response Composer ◀────┘
-  ↓
-Webhook Response
+Webhook Trigger → PCAM Engine → Blueprint Loader → Autonomy Gate
+  → Structure Analyzer → Command Planner → Command Runner
+  → Results Aggregator → Safety Monitor → Response
+```
+
+**V2 (With File Writing):**
+```
+Webhook Trigger → PCAM Engine → Config & Blueprint Loader → Autonomy Gate
+  ↓ (approved)                                              ↓ (rejected)
+Execution Planner → Command Runner → Safe File Writer   Manual Review
+  → Results Aggregator → Response ←─────────────────────────┘
 ```
 
 ## Usage
 
 ### 1. Deploy the Workflow
+
+**Option A: V1 (Command Execution Only)**
 1. Import `autonomous-pcam-programming-workflow.json` into your N8N instance
 2. Activate the workflow
 3. Note the webhook URL provided by N8N
+
+**Option B: V2 (With File Writing) - Recommended**
+1. Import `autonomous-pcam-programming-workflow-v2.json` into your N8N instance
+2. Update `config.json` to enable file writing:
+   ```json
+   {
+     "autonomous_programming_config": {
+       "safety": {
+         "enable_file_writing": true,
+         "allowed_file_extensions": [".md", ".json", ".ts", ".js", ".gitignore"]
+       }
+     }
+   }
+   ```
+3. Activate the workflow
+4. Note the webhook URL provided by N8N
 
 > **Note:** Keep `priv/project.md` (or your custom blueprint file) accessible to the N8N worker so the workflow can derive backend/UI-UX tasks.
 
@@ -257,13 +273,17 @@ node tests/test_command_planner.js
 
 # Test blueprint parsing rules
 node tests/test_blueprint_parser.js
+
+# Test file writer safety (V2 only)
+node tests/test_file_writer.js
 ```
 
-Both test suites should pass with 100% success before deploying the workflow to production.
+All test suites should pass with 100% success before deploying the workflow to production.
 
 **Test Coverage:**
 - ✅ 32 command planner safety tests
 - ✅ 26 blueprint parser validation tests
+- ✅ 20 file writer safety tests (V2)
 - ✅ Security boundary enforcement
 - ✅ Edge case handling
 

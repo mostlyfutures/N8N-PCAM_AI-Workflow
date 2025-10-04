@@ -1,68 +1,75 @@
-# Test Suite
+# Test Suite Documentation
 
-This directory contains validation tests for the autonomous N8N workflow components.
+This directory contains validation tests for the Autonomous PCAM Programming workflow.
 
 ## Test Files
 
-### `test_command_planner.js`
-Validates the Autonomous Command Planner safety logic:
-- ✅ Safe command approval (npm, git, grep, etc.)
-- ✅ Dangerous command blocking (rm -rf, sudo, etc.)
+### 1. `test_command_planner.js` (32 tests)
+**Purpose:** Validates that the Autonomous Command Planner correctly filters commands through safety guardrails.
+
+**Coverage:**
+- ✅ Safe command approval (ls, npm install, git status, etc.)
+- ✅ Dangerous command blocking (rm -rf, sudo, shutdown, etc.)
 - ✅ Command categorization (backend/uiux/general)
 - ✅ Security boundary enforcement
-- ✅ Edge case handling
+- ✅ Real-world command scenarios
 
-**Run:** `node tests/test_command_planner.js`
+**Run:**
+```bash
+node tests/test_command_planner.js
+```
 
-### `test_blueprint_parser.js`
-Validates the Project Blueprint Loader parsing logic:
-- ✅ UI/UX task detection (buttons, modals, images, etc.)
-- ✅ Backend task detection (contracts, tests, migrations)
-- ✅ Testing requirement extraction
-- ✅ Documentation section detection
-- ✅ Network/environment detection
-- ✅ Deduplication and edge cases
+**Expected Output:** `32 passed, 0 failed`
 
-**Run:** `node tests/test_blueprint_parser.js`
+---
+
+### 2. `test_blueprint_parser.js` (26 tests)
+**Purpose:** Validates that the Blueprint Parser correctly extracts tasks from `priv/project.md`.
+
+**Coverage:**
+- ✅ UI/UX task detection (modals, buttons, components)
+- ✅ Backend task detection (contracts, migrations, tests)
+- ✅ Testing task identification
+- ✅ Documentation parsing
+- ✅ Edge cases and malformed input
+
+**Run:**
+```bash
+node tests/test_blueprint_parser.js
+```
+
+**Expected Output:** `26 passed, 0 failed`
+
+---
+
+### 3. `test_file_writer.js` (20 tests) - V2 Only
+**Purpose:** Validates that the Safe File Writer enforces security policies for file creation.
+
+**Coverage:**
+- ✅ Allowed file extension approval (.md, .json, .ts, .js, .gitignore)
+- ✅ Blocked file extension rejection (.sh, .exe, .py)
+- ✅ File size limit enforcement (50KB default)
+- ✅ Template usage (node_gitignore, basic_readme)
+- ✅ Overwrite prevention
+- ✅ Security boundary tests
+
+**Run:**
+```bash
+node tests/test_file_writer.js
+```
+
+**Expected Output:** `20 passed, 0 failed`
+
+---
 
 ## Running All Tests
 
 ```bash
-# Run command planner tests
-node tests/test_command_planner.js
-
-# Run blueprint parser tests
-node tests/test_blueprint_parser.js
-
-# Run all tests
-npm test  # (if configured in package.json)
+npm run test
+# or manually:
+node tests/test_command_planner.js && \
+node tests/test_blueprint_parser.js && \
+node tests/test_file_writer.js
 ```
 
-## Test Results
-
-Both test suites should pass with 100% success:
-- Command Planner: 32/32 tests passing
-- Blueprint Parser: 26/26 tests passing
-
-## Adding New Tests
-
-To add new test cases:
-
-1. Open the relevant test file
-2. Add a new test using the pattern:
-   ```javascript
-   tests.test('Description of what it should do', () => {
-     const result = functionToTest(input);
-     assert.strictEqual(result.expected, actualValue);
-   });
-   ```
-
-3. Run the test file to validate
-
-## Integration with Workflow
-
-These tests validate the core logic used in:
-- **Project Blueprint Loader** node (`project-blueprint-loader`)
-- **Autonomous Command Planner** node (`command-planner`)
-
-The test logic mirrors the actual workflow code to ensure safety guarantees hold during autonomous execution.
+**Total Coverage:** 78 tests across all suites

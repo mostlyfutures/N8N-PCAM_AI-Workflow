@@ -6,7 +6,12 @@
       "command_timeout_seconds": 30,
       "enable_audit_logging": true,
       "require_project_path": false,
-      "sandbox_mode": true
+      "sandbox_mode": false,
+      "allowed_file_extensions": [".md", ".mdx", ".txt", ".json", ".ts", ".tsx", ".js", ".jsx", ".css", ".scss", ".gitignore", ".env.example"],
+      "max_file_bytes": 50000,
+      "max_template_lines": 1000,
+      "enable_file_writing": true,
+      "require_file_approval": false
     },
     "approved_commands": {
       "file_operations": [
