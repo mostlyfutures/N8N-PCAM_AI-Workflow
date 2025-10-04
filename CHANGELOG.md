@@ -1,4 +1,4 @@
-# Changelog
+# Changelog for PCAMAW v2
 
 All notable changes to the Autonomous PCAM Programming workflow.
 
@@ -130,9 +130,57 @@ All notable changes to the Autonomous PCAM Programming workflow.
 - [ ] File editing (not just creation)
 - [ ] Diff preview before writing
 
-### Planned for V3.0
+
+### Planned for V3.0 (PCAMAW v3)
 - [ ] LLM-based code generation
 - [ ] Context-aware file content
 - [ ] Project scaffolding (full boilerplates)
 - [ ] Interactive approval workflows
 - [ ] Web UI for monitoring
+
+PCAMAW v3 will introduce a local Next.js web UI that lets users interactively submit prompts, watch PCAM decomposition and execution, and accept produced changes directly into VS Code. The goal is to make autonomous programming visible, controllable, and tightly integrated with the developer's editor.
+
+Core capabilities planned:
+
+- Local Next.js Prompt UI
+  - Runs locally (development mode) and provides a single-page app to submit natural language prompts.
+  - Shows PCAM analysis (Persona, Context, Actions, Metrics) in real time and lists planned commands and file operations.
+  - Visualizes progress as the N8N workflow runs and streams command/file results.
+
+- Workflow Integration
+  - The web UI will POST prompts to the N8N webhook (PCAMAW) and receive progressive updates from the workflow (webhook or polling).
+  - Support for optional projectPath injection so PCAMAW can analyze the correct repository on disk.
+
+- Approval & Patch Generation
+  - When the workflow proposes file creations/patches, the UI will show diffs and allow the user to approve, edit, or reject each change.
+  - Approved changes are turned into unified patch files (git-style diffs) and stored locally in a staging area.
+
+- VS Code Sync Flow
+  - After user approval, the UI will offer a one-click option to "Open in VS Code" which:
+    1. Writes the staged patch files into a workspace-safe temporary folder (or directly into the project when configured)
+    2. Optionally opens a VS Code window (via the `vscode://` URI or `code` CLI) showing the changed files and a recommended commit message
+    3. Guides the developer through commit + push (or can optionally perform commit/push with explicit user consent)
+
+- Safety & Audit
+  - All file write operations still honor `config.json` allowlists and size limits.
+  - Interactive approval ensures nothing is written to the working tree without explicit user consent.
+  - Audit logs and a history of generated patches are retained for review.
+
+- Developer Experience
+  - Small local server (Next.js) + client (React) with minimal dependencies
+  - Simple installation script and a `start` command for local testing
+  - Optional VS Code extension (future) to embed the UI inside the editor
+
+Milestones for v3
+
+- M1: Next.js prompt UI + webhook integration (submit prompts, display PCAM output)
+- M2: Patch generation + diff visualization + staging area
+- M3: VS Code sync flow (open in editor + guided commit) with opt-in commit/push
+- M4: Optional local agent mode for automated commit + push with strict guardrails and user confirmations
+
+Security notes:
+
+- The UI will default to sandboxed preview mode (no writes) and require explicit enabling of file writes and commits.
+- Only allowed file extensions and template sizes will be accepted for automatic writes.
+- Any commit/push automation will require explicit user opt-in and will be rate-limited per session.
+
