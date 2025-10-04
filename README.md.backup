@@ -1,0 +1,723 @@
+# PCAMAW - Autonomous Programming Assistant
+
+**Persona, Context, Action, Metrics Autonom### 📝 Safe File Writing (V2+)
+- Creates files with approved extensions (.md, .json, .ts, .tsx, .js, .jsx, .css, .gitignore)
+- Uses templates for common files (.gitignore, README.md)
+- Enforces size limits (50KB default)
+- Prevents accidental file overwrites
+- Respects custom configuration
+
+### 🎯 Patch Generation System (V3)
+- Workflow creates structured patches in `.pcamaw/patches/`
+- Each patch contains file changes with diffs
+- JSON storage for easy review and application
+- Integrates with CLI for approval workflow
+
+### 🖥️ Interactive CLI Tool (V3)
+- **Cross-platform**: macOS, Windows, Linux
+- **Patch management**: List, show, stage, clear patches
+- **VS Code integration**: Open patches for review
+- **Git workflow**: Interactive commit and push
+- **Safety prompts**: Review before applying changes
+- **Commands**: `list`, `show`, `open`, `apply`, `stage`, `clear`
+
+### 🔒 Autonomous Safety System
+- Filters commands against a curated allowlist and blocks destructive patterns
+- Records every skipped or failing command for later review
+- File extension validation and size limits
+- Prevents system-level modifications
+
+### 📊 Results & Audit Reporting
+- Summarizes completion ratios per track (backend / UI/UX / general)
+- Produces audit reports with outstanding commands and safety incidents
+- Full execution logs for compliance
+
+## Overview
+
+PCAMAW is a complete autonomous programming system that combines **N8N workflow automation** with an **interactive CLI tool** to analyze prompts, execute programming tasks safely, and sync changes to VS Code with approval workflows.
+
+**Current Version:** V3 (CLI + Workflow Integration)
+
+The system uses **PCAM (Persona, Context, Action, Metrics) decomposition** to analyze user prompts and automatically plan, execute, and deliver programming changes with built-in safety guardrails and human-in-the-loop approval.
+## 🚀 V3 Quick Start
+
+### Complete Workflow (Recommended)
+
+```bash
+# 1. Send prompt to N8N workflow
+curl -X POST 'YOUR_WEBHOOK_URL' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "prompt": "Add user authentication with JWT tokens",
+    "projectPath": "/path/to/your/project"
+  }'
+
+# 2. Workflow analyzes and creates patch in .pcamaw/patches/
+
+# 3. Review and apply with CLI
+cd pcamaw-cli
+pcamaw list                    # See available patches
+pcamaw open auth-feature       # Review in VS Code
+pcamaw apply auth-feature      # Apply with interactive commit/push
+```
+
+### What Happens:
+
+1. **N8N Workflow** (Backend):
+   - ✅ Analyzes your prompt (PCAM decomposition)
+   - ✅ Loads safety config and project blueprint
+   - ✅ Checks autonomy confidence (>55%)
+   - ✅ Plans commands and file operations
+   - ✅ Creates patch files in `.pcamaw/patches/`
+
+2. **PCAMAW CLI** (Frontend):
+   - ✅ Lists available patches
+   - ✅ Opens patches in VS Code for review
+   - ✅ Applies changes to workspace
+   - ✅ Interactive git commit workflow
+   - ✅ Optional auto-push to remote
+
+**The workflow creates patches, the CLI applies them safely!**
+
+---
+
+## 📦 System Components
+
+### 1. N8N Workflow (Backend Automation)
+- **V1**: Command execution only
+- **V2**: Command execution + file writing
+- **V3**: Full patch generation system
+
+### 2. PCAMAW CLI (Interactive Tool)
+- Patch management and review
+- VS Code integration
+- Git commit/push workflow
+- Cross-platform (macOS, Windows, Linux)
+
+### 3. Safety System
+- Approved command allowlist
+- File extension validation
+- Size limits and overwrite protection
+- Audit logging
+
+---
+
+## Key Features
+
+### 🤖 PCAM Decomposition Engine
+- Weighted backend/UI-UX keyword detection to bias downstream plans.
+- PCAM metrics drive an autonomy score; execution only proceeds when confidence > 55%.
+
+### 📘 Project Blueprint Awareness
+- Automatically ingests `priv/project.md` (or provided path) to surface roadmap tasks.
+- Extracts backend and UI/UX to-do lists that get folded into execution plans.
+
+### 🧭 Backend & UI/UX Planner
+- Shapes separate command queues for backend, UI/UX, and general setup work.
+- Anchors commands around project conventions (Truffle, Next.js linting, modal scaffolds, etc.).
+
+### � Safe File Writing (v2)
+- Creates files with approved extensions (.md, .json, .ts, .tsx, .js, .jsx, .css, .gitignore)
+- Uses templates for common files (.gitignore, README.md)
+- Enforces size limits (50KB default)
+- Prevents accidental file overwrites
+- Respects custom configuration
+
+### �🔒 Autonomous Safety System
+- Filters commands against a curated allowlist and blocks destructive patterns.
+- Records every skipped or failing command for later review.
+
+### 📊 Results & Audit Reporting
+- Summarizes completion ratios per track (backend / UI/UX / general).
+- Produces audit reports with outstanding commands and safety incidents before responding.
+
+## System Architecture
+
+### Version Evolution
+
+**V1 (Command Execution Only):**
+```
+Webhook Trigger → PCAM Engine → Blueprint Loader → Autonomy Gate
+  → Structure Analyzer → Command Planner → Command Runner
+  → Results Aggregator → Safety Monitor → Response
+```
+
+**V2 (With File Writing):**
+```
+Webhook Trigger → PCAM Engine → Config & Blueprint Loader → Autonomy Gate
+  ↓ (approved)                                              ↓ (rejected)
+Execution Planner → Command Runner → Safe File Writer   Manual Review
+  → Results Aggregator → Response ←─────────────────────────┘
+```
+
+**V3 (Patch Generation + CLI Integration):**
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        N8N Workflow                             │
+│  Webhook → PCAM → Config → Autonomy Gate → Patch Generator     │
+│                                  ↓                              │
+│                    .pcamaw/patches/<name>.json                  │
+└─────────────────────────────────────────────────────────────────┘
+                                  ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                        PCAMAW CLI                               │
+│  List → Show → Open (VS Code) → Apply → Commit → Push          │
+│         │       │                  │        │        │          │
+│         └───────┴──────────────────┴────────┴────────┘          │
+│              Interactive Human Approval Loop                     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### V3 Complete Workflow
+
+1. **User sends prompt** to N8N webhook
+2. **Workflow analyzes** with PCAM decomposition
+3. **Autonomy gate** checks confidence (>55%)
+4. **Patch generator** creates `.pcamaw/patches/<name>.json`
+5. **CLI lists** available patches
+6. **User reviews** in VS Code
+7. **CLI applies** with interactive prompts
+8. **Git commit** with editable message
+9. **Optional push** to remote
+
+## Installation & Setup
+
+### 1. Deploy the N8N Workflow
+
+**Recommended: V3 (Full System)**
+
+1. Import `autonomous-pcam-programming-workflow-v2.json` into your N8N instance
+2. Update `config.json` to enable file writing:
+   ```json
+   {
+     "autonomous_programming_config": {
+       "safety": {
+         "enable_file_writing": true,
+         "allowed_file_extensions": [".md", ".json", ".ts", ".tsx", ".js", ".jsx", ".css", ".gitignore"]
+       }
+     }
+   }
+   ```
+3. Activate the workflow
+4. Note the webhook URL provided by N8N
+
+**Alternative: V1 or V2**
+- **V1**: `autonomous-pcam-programming-workflow.json` (command execution only)
+- **V2**: `autonomous-pcam-programming-workflow-v2.json` (adds file writing)
+
+> **Note:** Keep `priv/project.md` (or your custom blueprint file) accessible to the N8N worker.
+
+### 2. Install the CLI Tool
+
+#### macOS / Linux
+```bash
+cd pcamaw-cli
+npm install
+chmod +x bin/pcamaw.js
+npm link
+```
+
+#### Windows (PowerShell as Administrator)
+```powershell
+cd pcamaw-cli
+npm install
+npm link
+```
+
+#### Verify Installation
+```bash
+pcamaw --version  # Should show 0.1.0
+pcamaw --help     # Shows all commands
+```
+
+**📚 Full CLI documentation:** See [`pcamaw-cli/README.md`](./pcamaw-cli/README.md)
+
+### 3. Setup VS Code CLI
+
+**macOS:**
+1. Open VS Code
+2. `Cmd+Shift+P` → "Shell Command: Install 'code' command in PATH"
+
+**Windows:**
+- Usually automatic with VS Code installation
+- If not: Reinstall with "Add to PATH" checked
+
+**Linux:**
+```bash
+sudo update-alternatives --install /usr/bin/code code /usr/share/code/bin/code 100
+```
+
+---
+
+## Usage
+
+### Complete V3 Workflow Example
+
+```bash
+# 1. Send prompt to N8N workflow
+curl -X POST 'YOUR_WEBHOOK_URL' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "prompt": "Add user authentication with JWT tokens",
+    "projectPath": "/path/to/your/project"
+  }'
+
+# 2. N8N creates patch in .pcamaw/patches/
+
+# 3. List available patches
+pcamaw list
+
+# 4. Review in VS Code
+pcamaw open auth-feature
+
+# 5. Apply with interactive workflow
+pcamaw apply auth-feature
+  # → Confirms patch summary
+  # → Applies files
+  # → Shows git status
+  # → Prompts for commit message
+  # → Optionally pushes to remote
+```
+
+### CLI Commands Reference
+
+```bash
+# List all patches
+pcamaw list
+
+# Show patch details
+pcamaw show <patch-name>
+
+# Open patch in VS Code
+pcamaw open <patch-name>
+
+# Apply patch interactively
+pcamaw apply <patch-name>
+
+# Apply and auto-push
+pcamaw apply <patch-name> --auto-push
+
+# Apply without commit
+pcamaw apply <patch-name> --no-commit
+
+# Manually stage files as patch
+pcamaw stage file1.js file2.js --name "my-patch" --description "Changes"
+
+# Clear all patches
+pcamaw clear --force
+```
+
+### Webhook API Reference
+
+**POST** to your webhook URL with JSON payload:
+
+```json
+{
+  "prompt": "Add user authentication with JWT",
+  "projectPath": "/path/to/your/project"
+}
+```
+
+### Supported Prompt Categories
+
+#### Analysis Commands
+- "Analyze the codebase structure"
+- "Review dependencies for security issues" 
+- "Examine performance bottlenecks"
+
+#### Creation Commands  
+- "Create a new React component"
+- "Build API endpoints for user management"
+- "Generate test files for existing modules"
+
+#### Modification Commands
+- "Refactor the authentication system"
+- "Update dependencies to latest versions"
+- "Optimize database queries"
+
+#### Testing Commands
+- "Run all unit tests"
+- "Execute integration test suite" 
+- "Validate code coverage"
+
+#### Deployment Commands
+- "Build and deploy to staging"
+- "Create Docker container"
+- "Publish npm package"
+
+## Safety Features
+
+### Approved Safe Commands
+```bash
+# File Operations
+ls, pwd, find, grep, cat, head, tail, wc
+
+# Git Operations  
+git status, git log, git diff, git branch
+
+# Package Managers
+npm list, npm run, npm test, npm install
+pip list, pip install, python -m
+cargo check, cargo test, cargo build
+
+# Safe File Creation
+mkdir -p, touch, echo
+
+# Containerization
+docker build, docker run --rm
+```
+
+### Blocked Dangerous Commands
+```bash
+# File Destruction
+rm -rf, rm -f, del /f, format
+
+# System Modifications
+sudo, chmod 777, chown
+
+# Destructive Git Operations
+git push --force, git reset --hard
+
+# Package Removal
+npm uninstall, pip uninstall
+```
+
+### Autonomous Execution Criteria
+- Command must match approved safe patterns
+- No dangerous keywords detected
+- Automation confidence > 50%
+- Project structure analysis successful
+- Safety checks passed
+
+## Response Format
+
+### Autonomous Response Body (sent by `Webhook Response` node)
+```json
+{
+  "prompt": "Wire up the create market UI and confirm backend tests",
+  "status": "partial",
+  "summary": "Backend: 67% complete | UI/UX: 33% complete | General: 100% complete",
+  "outstanding": {
+    "backend": ["npx truffle test"],
+    "uiux": ["find components -maxdepth 1 -name \"*CreateMarket*\" || echo \"Market creation modal missing\""] ,
+    "general": []
+  },
+  "safetyAlerts": [
+    {
+      "command": "rm -rf .next",
+      "category": "general",
+      "reason": "Command blocked by safety policy"
+    }
+  ],
+  "auditReport": {
+    "manual_review_required": true,
+    "incidents": [
+      {
+        "type": "blocked_command",
+        "command": "rm -rf .next",
+        "category": "general",
+        "message": "Command blocked by safety policy"
+      }
+    ]
+  }
+}
+```
+
+### Manual Review Bypass (Autonomy Gate false)
+When PCAM confidence stays below threshold, the workflow short-circuits to the response composer with a guidance payload similar to:
+
+```json
+{
+  "prompt": "Deploy to production and clean the server",
+  "status": "manual-review-required",
+  "summary": "Automation paused: autonomy score below safety threshold",
+  "outstanding": {},
+  "safetyAlerts": [],
+  "auditReport": {
+    "manual_review_required": true,
+    "incidents": []
+  }
+}
+```
+
+## Advanced Configuration
+
+### Extending Safe Commands
+Tweak the allowlist in the **Autonomous Command Planner** node (`safePrefixes` array) to enable additional trusted commands:
+
+```javascript
+const safePrefixes = [
+  // ... existing prefixes
+  'npm run custom-script',
+  'npx playwright test'
+];
+```
+
+Add any sensitive patterns that should always be blocked to the `dangerousPatterns` array in the same node.
+
+### Adjusting Automation Confidence Threshold
+Update the PCAM confidence threshold inside the **PCAM Decomposition Engine**:
+
+```javascript
+const proceedAutonomously = analysis.metrics.automation_confidence > 0.55;
+```
+
+Raise the threshold for stricter control (e.g., `> 0.75`) or lower it for more autonomy (e.g., `> 0.4`).
+
+### Custom Blueprint Location
+Set the `PROJECT_BLUEPRINT_PATH` environment variable (or edit the candidate list in **Project Blueprint Loader**) to look up alternative documents, e.g.:
+
+```bash
+export PROJECT_BLUEPRINT_PATH=/workspace/specs/backend_uiux.md
+```
+
+### Adding Project-Specific Plans
+Inject additional backend/UI-UX tasks in **Project Structure Analyzer** by appending to the `addBackendPlan` / `addUiuxPlan` calls.
+
+## Security Considerations
+
+### Audit Logging
+- All operations are logged with timestamps
+- Safety checks are recorded for compliance
+- Execution results are preserved for analysis
+
+### Network Security  
+- No unauthorized network access
+- Webhook endpoint should use HTTPS
+- Consider IP whitelisting for production
+
+### File System Protection
+- Commands are sandboxed to project directory
+- No system-level modifications allowed
+- File integrity monitoring included
+
+## Testing
+
+### Running Validation Tests
+
+The workflow includes comprehensive test suites to validate safety and parsing logic:
+
+```bash
+# Test command planner safety guardrails
+node tests/test_command_planner.js
+
+# Test blueprint parsing rules
+node tests/test_blueprint_parser.js
+
+# Test file writer safety (V2 only)
+node tests/test_file_writer.js
+```
+
+All test suites should pass with 100% success before deploying the workflow to production.
+
+**Test Coverage:**
+- ✅ 32 command planner safety tests
+- ✅ 26 blueprint parser validation tests
+- ✅ 20 file writer safety tests (V2)
+- ✅ Security boundary enforcement
+- ✅ Edge case handling
+
+See `tests/README.md` for detailed test documentation.
+
+---
+
+## PCAMAW CLI (V3)
+
+The PCAMAW CLI is a cross-platform command-line tool for managing patches generated by the N8N workflow.
+
+### Key Features
+
+- ✅ **Cross-platform**: macOS, Windows, Linux
+- ✅ **Patch Management**: List, show, stage, apply, clear
+- ✅ **VS Code Integration**: Open patches for review
+- ✅ **Git Workflow**: Interactive commit and push
+- ✅ **Safety Prompts**: Review before applying changes
+
+### Quick Commands
+
+```bash
+pcamaw list                    # List all patches
+pcamaw show <name>             # Show patch details
+pcamaw open <name>             # Open in VS Code
+pcamaw apply <name>            # Apply interactively
+pcamaw stage <files...>        # Create patch manually
+pcamaw clear                   # Remove all patches
+```
+
+### Interactive Apply Workflow
+
+When you run `pcamaw apply <name>`, you get:
+
+1. **Patch Summary** - File count and operations
+2. **Confirmation** - "Apply this patch?"
+3. **File Writing** - Safe application of changes
+4. **Git Status** - Show what changed
+5. **Commit Prompt** - Commit these changes?
+6. **Message Editor** - Edit commit message
+7. **Push Prompt** - Push to remote?
+
+### Platform-Specific Usage
+
+**macOS/Linux:**
+```bash
+./bin/pcamaw.js list    # Direct execution
+pcamaw list             # After npm link
+```
+
+**Windows (PowerShell):**
+```powershell
+node bin\pcamaw.js list  # Direct execution
+pcamaw list              # After npm link
+```
+
+**Full Documentation:** [`pcamaw-cli/README.md`](./pcamaw-cli/README.md)
+
+---
+
+## Project Structure
+
+```
+N8N-PCAM_AI-Workflow/
+├── autonomous-pcam-programming-workflow.json      # V1 workflow
+├── autonomous-pcam-programming-workflow-v2.json   # V2 workflow (current)
+├── config.json                                     # Safety configuration
+├── CHANGELOG.md                                    # Version history & roadmap
+├── README.md                                       # This file
+│
+├── pcamaw-cli/                                    # CLI Tool (V3)
+│   ├── README.md                                  # CLI documentation
+│   ├── QUICK_START.md                             # Platform quick start
+│   ├── CROSS_PLATFORM_GUIDE.md                    # Platform comparison
+│   ├── TEST_RESULTS.md                            # CLI test results
+│   ├── package.json                               # Dependencies
+│   ├── bin/
+│   │   └── pcamaw.js                              # Main CLI entry
+│   └── lib/
+│       ├── patch-manager.js                       # Patch storage/retrieval
+│       ├── vscode-integration.js                  # VS Code launcher
+│       └── commit-workflow.js                     # Git commit/push
+│
+├── tests/                                         # Test suites
+│   ├── README.md                                  # Test documentation
+│   ├── test_command_planner.js                    # 32 safety tests
+│   ├── test_blueprint_parser.js                   # 26 parsing tests
+│   └── test_file_writer.js                        # 20 file writer tests
+│
+└── priv/
+    └── project.md                                 # Project blueprint
+```
+
+---
+
+## Troubleshooting
+
+### Workflow Issues
+
+1. **Commands Not Executing**
+   - Check if commands match approved safe patterns
+   - Verify project path exists and is accessible
+   - Review safety audit logs for blocked operations
+
+2. **Low Automation Confidence**
+   - Refine prompt with specific programming intentions
+   - Avoid ambiguous or destructive language
+   - Include clear project context
+
+3. **Webhook Timeouts**
+   - Complex projects may require longer execution time
+   - Consider splitting large operations into smaller workflows
+   - Monitor N8N execution limits
+
+### CLI Issues
+
+4. **Command not found: `pcamaw`**
+   - **macOS/Linux:** Run `npm link` or use `./bin/pcamaw.js`
+   - **Windows:** Run `npm link` as Administrator or use `node bin\pcamaw.js`
+   - **Alternative:** Add `pcamaw-cli/bin` to PATH
+
+5. **VS Code doesn't open**
+   - **macOS:** `Cmd+Shift+P` → "Install 'code' command in PATH"
+   - **Windows:** Reinstall VS Code with "Add to PATH" checked
+   - **Linux:** Add `/usr/share/code/bin` to PATH
+
+6. **Patch apply fails**
+   - Check file paths are relative to workspace root
+   - Use `pcamaw show <name>` to verify paths
+   - Ensure no conflicting uncommitted changes
+
+7. **Git push fails**
+   - Check remote is configured: `git remote -v`
+   - Set up remote: `git remote add origin <url>`
+   - Push manually: `git push origin <branch>`
+
+### Debug Mode
+Enable detailed logging by adding debug statements to Code nodes:
+
+```javascript
+console.log('Debug info:', JSON.stringify(data, null, 2));
+return [{json: {debug: true, ...result}}];
+```
+
+## Integration Examples
+
+### GitHub Actions Integration
+```yaml
+- name: Trigger Autonomous Programming
+  run: |
+    curl -X POST "${{ secrets.N8N_WEBHOOK_URL }}" \
+      -H "Content-Type: application/json" \
+      -d '{"prompt": "Run tests and update documentation", "projectPath": "${{ github.workspace }}"}'
+```
+
+### VS Code Extension
+```typescript
+async function triggerAutonomousProgramming(prompt: string) {
+  const response = await fetch(WEBHOOK_URL, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      prompt,
+      projectPath: vscode.workspace.rootPath
+    })
+  });
+  
+  const result = await response.json();
+  vscode.window.showInformationMessage(result.message);
+}
+```
+
+## Contributing
+
+To extend this system:
+
+1. **N8N Workflow**: Fork the workflow in N8N and add new nodes
+2. **CLI Tool**: Add new commands in `pcamaw-cli/bin/pcamaw.js`
+3. **Safety First**: Maintain safety-first approach in all modifications
+4. **Testing**: Run all test suites before deployment
+   ```bash
+   # Workflow tests
+   node tests/test_command_planner.js
+   node tests/test_blueprint_parser.js
+   node tests/test_file_writer.js
+   
+   # CLI tests (see pcamaw-cli/TEST_RESULTS.md)
+   ```
+5. **Documentation**: Update README and CHANGELOG for new features
+
+### Roadmap
+
+See [`CHANGELOG.md`](./CHANGELOG.md) for detailed version history and future plans including:
+- Next.js web UI (V3 future enhancement)
+- Real-time patch preview
+- Advanced VS Code integration
+- Multi-project support
+
+## Version History
+
+- **V1**: Command execution with PCAM decomposition
+- **V2**: Added safe file writing with templates
+- **V3**: CLI tool with patch management and VS Code integration ← Current
+
+## License
+
+This PCAMAW system is provided under MIT license for autonomous programming assistance.
