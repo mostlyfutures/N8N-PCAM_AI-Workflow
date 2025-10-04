@@ -4,6 +4,29 @@
 
 This N8N workflow implements a sophisticated autonomous programming assistant that uses **PCAM (Persona, Context, Action, Metrics) decomposition** to analyze user prompts and automatically execute programming tasks without requiring manual confirmation for each command.
 
+
+
+
+🚀 How It Works Now
+Example Usage:
+
+# Send request to your N8N webhook
+curl -X POST 'YOUR_WEBHOOK_URL' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "prompt": "Create a .gitignore file for my Next.js project",
+    "projectPath": "/path/to/your/project"
+  }'
+
+The workflow will:
+
+✅ Analyze your prompt (PCAM decomposition)
+✅ Load safety config from config.json
+✅ Check autonomy confidence (>55%)
+✅ Plan file operations (.gitignore with template)
+✅ Create the file safely (if approved extension)
+✅ Return results with files created
+
 ## Key Features
 
 ### 🤖 PCAM Decomposition Engine
