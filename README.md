@@ -245,6 +245,30 @@ Inject additional backend/UI-UX tasks in **Project Structure Analyzer** by appen
 - No system-level modifications allowed
 - File integrity monitoring included
 
+## Testing
+
+### Running Validation Tests
+
+The workflow includes comprehensive test suites to validate safety and parsing logic:
+
+```bash
+# Test command planner safety guardrails
+node tests/test_command_planner.js
+
+# Test blueprint parsing rules
+node tests/test_blueprint_parser.js
+```
+
+Both test suites should pass with 100% success before deploying the workflow to production.
+
+**Test Coverage:**
+- ✅ 32 command planner safety tests
+- ✅ 26 blueprint parser validation tests
+- ✅ Security boundary enforcement
+- ✅ Edge case handling
+
+See `tests/README.md` for detailed test documentation.
+
 ## Troubleshooting
 
 ### Common Issues
